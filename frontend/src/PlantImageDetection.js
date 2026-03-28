@@ -329,31 +329,34 @@ function PlantImageDetection({ userId, language = "en", onDetectionComplete }) {
                 marginBottom: "15px",
               }}
             >
-              <h4 style={{ color: COLORS.primary, margin: "0 0 12px 0" }}>📋 All class scores</h4>
+              <h4 style={{ color: COLORS.primary, margin: "0 0 15px 0" }}>📋 All class scores</h4>
               {detection.localized?.predictions?.length > 0 && (
-                <p style={{ fontSize: "12px", color: "#666", margin: "0 0 10px 0" }}>
+                <p style={{ fontSize: "12px", color: "#666", margin: "0 0 15px 0" }}>
                   Labels below are translated for your language; percentages are from the model.
                 </p>
               )}
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {(detection.localized?.predictions?.length > 0
                   ? detection.localized.predictions
                   : detection.predictions
-                ).map((p, idx, arr) => (
+                ).map((p, idx) => (
                   <div
                     key={`${p.label}-${idx}`}
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                      gap: "12px",
-                      fontSize: "14px",
-                      borderBottom: idx < arr.length - 1 ? `1px solid ${COLORS.border}` : "none",
-                      paddingBottom: "8px",
+                      paddingBottom: "12px",
+                      borderBottom: idx < ((detection.localized?.predictions?.length > 0
+                        ? detection.localized.predictions
+                        : detection.predictions
+                      ).length - 1) ? `1px solid ${COLORS.border}` : "none",
                     }}
                   >
-                    <span style={{ color: COLORS.text, wordBreak: "break-word", flex: 1 }}>{p.label}</span>
-                    <span style={{ fontWeight: 600, color: COLORS.primaryDark, whiteSpace: "nowrap" }}>
+                    <span style={{ color: COLORS.text, wordBreak: "break-word", flex: 1 }}>
+                      {p.label}
+                    </span>
+                    <span style={{ fontWeight: 600, color: COLORS.primaryDark, whiteSpace: "nowrap", marginLeft: "20px" }}>
                       {p.confidencePercent}%
                     </span>
                   </div>

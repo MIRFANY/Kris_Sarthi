@@ -5,6 +5,8 @@ import { injectAnimationStyles } from "./AnimationStyles";
 import ReadPopup from "./ReadPopup";
 import PlantImageDetection from "./PlantImageDetection";
 import DetectionHistory from "./DetectionHistory";
+import GovtSchemes from "./GovtSchemes";
+import CropInsurance from "./CropInsurance";
 // --- Explore Route Dark Palette (aligned with landing page) ---
 const COLORS = {
   background: "#060a06",
@@ -21,7 +23,7 @@ const COLORS = {
   inputBorder: "rgba(127,255,106,0.25)",
 };
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API_URL = process.env.REACT_APP_API_URL || "https://kris-sarthi-1.onrender.com";
 
 function App() {
   const GUEST_USER_ID = "000000000000000000000001";
@@ -328,7 +330,23 @@ function App() {
         const topCond = loc?.topCondition || d.diseaseName;
         let status = "Analysis complete";
         let color = "#388e3c";
-        let message = `${topCond} (${d.confidencePercent}% confidence)`;
+        
+        // Build message showing all predictions (or first 10 with indicator)
+        const predictions = d.predictions || [];
+        const displayPredictions = predictions.slice(0, 10);
+        const moreCount = Math.max(0, predictions.length - 10);
+        const predictionsList = displayPredictions
+          .map(p => {
+            const confidence = p.confidencePercent ?? Math.round(p.score * 1000) / 10;
+            return `${p.label || p.originalLabel} (${confidence}%)`;
+          })
+          .join(" | ");
+        
+        let message = predictionsList;
+        if (moreCount > 0) {
+          message += ` ... and ${moreCount} more`;
+        }
+        message = message || `${topCond} (${d.confidencePercent}% confidence)`;
 
         if (d.isHealthy) {
           status = "✅ Likely healthy";
@@ -337,7 +355,7 @@ function App() {
         } else {
           status = "⚕️ Top prediction";
           color = "#d32f2f";
-          message = `${topCond} — ${d.confidencePercent}% confidence`;
+          message = message || `${topCond} — ${d.confidencePercent}% confidence`;
         }
 
         setDiseaseResult({
@@ -1692,11 +1710,14 @@ const exploreContent = {
     uploadPhoto: "Upload Crop Photo",
     focusFeature: "Focus Feature",
     analyzingImage: "Analyzing image...",
+    diseaseScanScores: "Detection scores",
     cropTimelineTitle: "Crop Timeline",
     cropTimelineDesc: "Select a crop and follow stage-wise tasks from sowing to harvest with actionable reminders.",
     cropTimelineSummary: "schedule includes",
     cropTimelineStages: "stages.",
     cropTimelineFallback: "Pick a crop to preview your seasonal plan.",
+    cropTimelineFullHeading: "Full stage plan",
+    cropTimelineCurrentBadge: "Current stage",
     weatherTitle: "Weather and Advisory",
     weatherDesc: "Fetch real location weather and get practical farming advisories for irrigation and spray timing.",
     detectLocation: "Detect Location",
@@ -1713,6 +1734,7 @@ const exploreContent = {
     refreshPrices: "Refresh Prices",
     loadingMarket: "Loading market data...",
     noMarketLoaded: "No market data loaded yet.",
+    marketListHeading: "All loaded commodities",
     cropLabel: "Crop",
     unitFallback: "quintal",
     assistantTitle: "GreenGeenie Assistant",
@@ -1726,6 +1748,10 @@ const exploreContent = {
     noHistory: "No detection history yet. Upload a crop photo to create records.",
     plantFallback: "Plant",
     conditionFallback: "Condition unknown",
+    govtSchemesTitle: "Government Schemes",
+    govtSchemesDesc: "Find subsidies and programmes matched to your state, crop, and farm size.",
+    cropFailureTitle: "Crop Failure & Insurance",
+    cropFailureDesc: "PMFBY steps, helpline, and recovery guidance tailored to your crop and state.",
   },
   hi: {
     tabs: { home: "होम", detection: "प्लांट डिटेक्शन", history: "हिस्ट्री", back: "लैंडिंग पर वापस" },
@@ -1737,11 +1763,14 @@ const exploreContent = {
     uploadPhoto: "फसल फोटो अपलोड करें",
     focusFeature: "फीचर पर जाएं",
     analyzingImage: "छवि का विश्लेषण हो रहा है...",
+    diseaseScanScores: "पहचान स्कोर",
     cropTimelineTitle: "फसल टाइमलाइन",
     cropTimelineDesc: "फसल चुनें और बुवाई से कटाई तक चरणवार कार्य देखें।",
     cropTimelineSummary: "शेड्यूल में",
     cropTimelineStages: "चरण हैं।",
     cropTimelineFallback: "मौसमी योजना देखने के लिए फसल चुनें।",
+    cropTimelineFullHeading: "पूरा चरण योजना",
+    cropTimelineCurrentBadge: "वर्तमान चरण",
     weatherTitle: "मौसम और सलाह",
     weatherDesc: "लोकेशन आधारित मौसम और सिंचाई/स्प्रे के लिए उपयोगी सलाह पाएं।",
     detectLocation: "लोकेशन पता करें",
@@ -1758,6 +1787,7 @@ const exploreContent = {
     refreshPrices: "भाव रीफ्रेश करें",
     loadingMarket: "मंडी डेटा लोड हो रहा है...",
     noMarketLoaded: "अभी मंडी डेटा उपलब्ध नहीं है।",
+    marketListHeading: "सभी लोड कीमतें",
     cropLabel: "फसल",
     unitFallback: "क्विंटल",
     assistantTitle: "ग्रीनजीनी सहायक",
@@ -1771,6 +1801,10 @@ const exploreContent = {
     noHistory: "अभी कोई डिटेक्शन हिस्ट्री नहीं है। फसल फोटो अपलोड करें।",
     plantFallback: "पौधा",
     conditionFallback: "स्थिति अज्ञात",
+    govtSchemesTitle: "सरकारी योजनाएं",
+    govtSchemesDesc: "राज्य, फसल और खेत के आकार के अनुसार सब्सिडी और योजनाएं खोजें।",
+    cropFailureTitle: "फसल नुकसान और बीमा",
+    cropFailureDesc: "PMFBY, हेल्पलाइन और फसल नुकसान के बाद क्या करें—आपकी फसल व राज्य के अनुसार।",
   },
   pa: {
     tabs: { home: "ਹੋਮ", detection: "ਪਲਾਂਟ ਡਿਟੈਕਸ਼ਨ", history: "ਹਿਸਟਰੀ", back: "ਲੈਂਡਿੰਗ ਤੇ ਵਾਪਸ" },
@@ -1782,11 +1816,14 @@ const exploreContent = {
     uploadPhoto: "ਫਸਲ ਫੋਟੋ ਅਪਲੋਡ ਕਰੋ",
     focusFeature: "ਫੀਚਰ ਤੇ ਜਾਓ",
     analyzingImage: "ਤਸਵੀਰ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...",
+    diseaseScanScores: "ਪਛਾਣ ਸਕੋਰ",
     cropTimelineTitle: "ਫਸਲ ਟਾਈਮਲਾਈਨ",
     cropTimelineDesc: "ਫਸਲ ਚੁਣੋ ਅਤੇ ਬੀਜਾਈ ਤੋਂ ਕਟਾਈ ਤੱਕ ਸਟੇਜ-ਵਾਇਜ਼ ਕੰਮ ਵੇਖੋ।",
     cropTimelineSummary: "ਸ਼ਡਿਊਲ ਵਿੱਚ",
     cropTimelineStages: "ਸਟੇਜ ਹਨ।",
     cropTimelineFallback: "ਮੌਸਮੀ ਯੋਜਨਾ ਵੇਖਣ ਲਈ ਫਸਲ ਚੁਣੋ।",
+    cropTimelineFullHeading: "ਪੂਰਾ ਸਟੇਜ ਪਲਾਨ",
+    cropTimelineCurrentBadge: "ਮੌਜੂਦਾ ਸਟੇਜ",
     weatherTitle: "ਮੌਸਮ ਅਤੇ ਸਲਾਹ",
     weatherDesc: "ਲੋਕੇਸ਼ਨ ਅਧਾਰਤ ਮੌਸਮ ਅਤੇ ਸਿੰਚਾਈ/ਸਪਰੇ ਲਈ ਸਲਾਹ ਪਾਓ।",
     detectLocation: "ਲੋਕੇਸ਼ਨ ਪਤਾ ਕਰੋ",
@@ -1803,6 +1840,7 @@ const exploreContent = {
     refreshPrices: "ਰੇਟ ਰਿਫਰੈਸ਼ ਕਰੋ",
     loadingMarket: "ਮੰਡੀ ਡਾਟਾ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
     noMarketLoaded: "ਹਾਲੇ ਮੰਡੀ ਡਾਟਾ ਨਹੀਂ ਮਿਲਿਆ।",
+    marketListHeading: "ਸਾਰੀਆਂ ਲੋਡ ਕੀਮਤਾਂ",
     cropLabel: "ਫਸਲ",
     unitFallback: "ਕੁਇੰਟਲ",
     assistantTitle: "GreenGeenie ਸਹਾਇਕ",
@@ -1816,6 +1854,10 @@ const exploreContent = {
     noHistory: "ਹਾਲੇ ਕੋਈ ਡਿਟੈਕਸ਼ਨ ਹਿਸਟਰੀ ਨਹੀਂ। ਫਸਲ ਫੋਟੋ ਅਪਲੋਡ ਕਰੋ।",
     plantFallback: "ਪੌਧਾ",
     conditionFallback: "ਹਾਲਤ ਅਣਜਾਣ",
+    govtSchemesTitle: "ਸਰਕਾਰੀ ਸਕੀਮਾਂ",
+    govtSchemesDesc: "ਰਾਜ, ਫਸਲ ਅਤੇ ਖੇਤ ਦੇ ਆਕਾਰ ਅਨੁਸਾਰ ਸਬਸਿਡੀ ਅਤੇ ਯੋਜਨਾਵਾਂ ਲੱਭੋ।",
+    cropFailureTitle: "ਫਸਲ ਨੁਕਸਾਨ ਅਤੇ ਬੀਮਾ",
+    cropFailureDesc: "PMFBY, ਹੈਲਪਲਾਈਨ ਅਤੇ ਫਸਲ ਨੁਕਸਾਨ ਤੋਂ ਬਾਅਦ ਕਦਮ—ਤੁਹਾਡੀ ਫਸਲ ਅਤੇ ਰਾਜ ਅਨੁਸਾਰ।",
   },
   ta: {
     tabs: { home: "முகப்பு", detection: "பிளாண்ட் கண்டறிதல்", history: "வரலாறு", back: "லேண்டிங்கிற்கு திரும்பு" },
@@ -1827,11 +1869,14 @@ const exploreContent = {
     uploadPhoto: "பயிர் படத்தை பதிவேற்றவும்",
     focusFeature: "அம்சத்தை திறக்கவும்",
     analyzingImage: "படம் பகுப்பாய்வு செய்யப்படுகிறது...",
+    diseaseScanScores: "கண்டறிதல் மதிப்பெண்கள்",
     cropTimelineTitle: "பயிர் காலவரிசை",
     cropTimelineDesc: "பயிரை தேர்ந்து விதைப்பு முதல் அறுவடை வரை கட்டப்படியான பணிகளைப் பின்பற்றுங்கள்.",
     cropTimelineSummary: "அட்டவணையில்",
     cropTimelineStages: "நிலைகள் உள்ளன.",
     cropTimelineFallback: "பருவத் திட்டம் பார்க்க பயிரை தேர்வு செய்யவும்.",
+    cropTimelineFullHeading: "முழு நிலை திட்டம்",
+    cropTimelineCurrentBadge: "தற்போதைய நிலை",
     weatherTitle: "வானிலை மற்றும் ஆலோசனை",
     weatherDesc: "இருப்பிட வானிலை மற்றும் பாசனம்/தெளிப்பு பயன்பாட்டு ஆலோசனைகளை பெறுங்கள்.",
     detectLocation: "இருப்பிடத்தை கண்டறி",
@@ -1848,6 +1893,7 @@ const exploreContent = {
     refreshPrices: "விலை புதுப்பிக்க",
     loadingMarket: "சந்தை தரவு ஏற்றப்படுகிறது...",
     noMarketLoaded: "இன்னும் சந்தை தரவு இல்லை.",
+    marketListHeading: "ஏற்றப்பட்ட அனைத்து பொருட்கள்",
     cropLabel: "பயிர்",
     unitFallback: "க்வின்டல்",
     assistantTitle: "GreenGeenie உதவியாளர்",
@@ -1861,6 +1907,10 @@ const exploreContent = {
     noHistory: "இன்னும் கண்டறிதல் வரலாறு இல்லை. பயிர் படம் பதிவேற்றவும்.",
     plantFallback: "தாவரம்",
     conditionFallback: "நிலை தெரியவில்லை",
+    govtSchemesTitle: "அரசு திட்டங்கள்",
+    govtSchemesDesc: "மாநிலம், பயிர் மற்றும் விவசாய அளவுக்கு ஏற்ப மானியங்கள் மற்றும் திட்டங்களைத் தேடுங்கள்.",
+    cropFailureTitle: "பயிர் இழப்பு மற்றும் காப்பீடு",
+    cropFailureDesc: "PMFBY, உதவி எண் மற்றும் இழப்புக்குப் பிந்தைய நடவடிக்கைகள்—உங்கள் பயிர் மற்றும் மாநிலத்திற்கு ஏற்ப.",
   },
 };
 
@@ -1960,7 +2010,7 @@ React.useEffect(() => {
     try {
       setHistoryLoading(true);
       const response = await axios.get(`${API_URL}/api/plant-detection/history/${effectiveUserId}`);
-      setHistoryPreview(Array.isArray(response.data) ? response.data.slice(0, 3) : []);
+      setHistoryPreview(Array.isArray(response.data) ? response.data.slice(0, 12) : []);
     } catch (err) {
       setHistoryPreview([]);
     } finally {
@@ -2156,6 +2206,15 @@ if (showFeatureHub) {
     }, 60);
   };
 
+  const exploreSchemeLanguage =
+    { en: "English", hi: "Hindi", pa: "Punjabi", ta: "Tamil" }[language] || "English";
+  const exploreStateLabel = (selectedState || "PUNJAB")
+    .replace(/-/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const exploreCropForPolicy =
+    selectedCrop && selectedCrop !== "Select" ? selectedCrop : "Wheat";
+
   return (
     <div className="ks-explore-root">
       <div className="ks-grid" aria-hidden="true" />
@@ -2200,7 +2259,7 @@ if (showFeatureHub) {
         </section>
 
         <section className="ks-explore-row">
-          <article id="feature-detection" className="ks-explore-card">
+          <article id="feature-detection" className="ks-explore-card ks-explore-card-expand">
             <span className="ks-feature-tag">AI</span>
             <h3>{activeExplore.diseaseTitle}</h3>
             <p>{activeExplore.diseaseDesc}</p>
@@ -2219,10 +2278,40 @@ if (showFeatureHub) {
               <button className="ks-ghost" onClick={() => jumpToFeature("feature-detection", "detection")}>{activeExplore.focusFeature}</button>
             </div>
             {diseaseLoading && <p className="ks-inline-note">{activeExplore.analyzingImage}</p>}
-            {diseaseResult && <p className="ks-inline-note">{diseaseResult.status}: {diseaseResult.message}</p>}
+            {diseaseResult && (
+              <div className="ks-explore-detail">
+                <p className="ks-inline-note">{diseaseResult.status}: {diseaseResult.message}</p>
+                {diseaseResult.details?.localized?.predictions?.length > 0 && (
+                  <div className="ks-explore-scroll ks-disease-hub-scores">
+                    <p className="ks-explore-detail-head">{activeExplore.diseaseScanScores}</p>
+                    <ul className="ks-disease-hub-list">
+                      {diseaseResult.details.localized.predictions.map((p, i) => (
+                        <li key={i}>
+                          <span>{p.label}</span>
+                          <span>{p.confidencePercent ?? Math.round((p.score ?? 0) * 1000) / 10}%</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {(!diseaseResult.details?.localized?.predictions?.length && Array.isArray(diseaseResult.details?.predictions) && diseaseResult.details.predictions.length > 0) && (
+                  <div className="ks-explore-scroll ks-disease-hub-scores">
+                    <p className="ks-explore-detail-head">{activeExplore.diseaseScanScores}</p>
+                    <ul className="ks-disease-hub-list">
+                      {diseaseResult.details.predictions.map((p, i) => (
+                        <li key={i}>
+                          <span>{p.label}</span>
+                          <span>{p.confidencePercent ?? Math.round((p.score ?? 0) * 1000) / 10}%</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </article>
 
-          <article className="ks-explore-card">
+          <article className="ks-explore-card ks-explore-card-expand">
             <span className="ks-feature-tag">Calendar</span>
             <h3>{activeExplore.cropTimelineTitle}</h3>
             <p>{activeExplore.cropTimelineDesc}</p>
@@ -2237,16 +2326,42 @@ if (showFeatureHub) {
                 ))}
               </select>
             </div>
-            <p className="ks-inline-note">
-              {selectedCrop !== "Select"
-                ? `${selectedCrop} ${activeExplore.cropTimelineSummary} ${cropOptions.find((c) => c.name === selectedCrop)?.calendar.length || 0} ${activeExplore.cropTimelineStages}`
-                : activeExplore.cropTimelineFallback}
-            </p>
+            {selectedCrop === "Select" ? (
+              <p className="ks-inline-note">{activeExplore.cropTimelineFallback}</p>
+            ) : (() => {
+              const cal = cropOptions.find((c) => c.name === selectedCrop)?.calendar || [];
+              const cur = getCurrentStage(cal);
+              return (
+                <div className="ks-explore-detail">
+                  <p className="ks-explore-detail-head">
+                    {activeExplore.cropTimelineFullHeading} · {cal.length} {activeExplore.cropTimelineStages}
+                  </p>
+                  <ul className="ks-explore-scroll ks-crop-stage-hub-list">
+                    {cal.map((item, idx) => {
+                      const isCurrent = idx === cur;
+                      return (
+                        <li key={`${item.stage}-${idx}`} className={isCurrent ? "ks-crop-stage-hub-current" : ""}>
+                          <div className="ks-crop-stage-hub-top">
+                            <span className="ks-crop-stage-hub-num">{idx + 1}</span>
+                            <span className="ks-crop-stage-hub-name">{item.stage}</span>
+                            {isCurrent && (
+                              <span className="ks-crop-stage-hub-badge">{activeExplore.cropTimelineCurrentBadge}</span>
+                            )}
+                          </div>
+                          <div className="ks-crop-stage-hub-meta">{item.date}</div>
+                          <p className="ks-crop-stage-hub-tip">{item.tip}</p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })()}
           </article>
         </section>
 
         <section className="ks-explore-row">
-          <article className="ks-explore-card">
+          <article className="ks-explore-card ks-explore-card-expand">
             <span className="ks-feature-tag">Local</span>
             <h3>{activeExplore.weatherTitle}</h3>
             <p>{activeExplore.weatherDesc}</p>
@@ -2278,8 +2393,8 @@ if (showFeatureHub) {
                 </div>
 
                 {Array.isArray(weather.farmingAdvisory) && weather.farmingAdvisory.length > 0 && (
-                  <ul className="ks-weather-advisory">
-                    {weather.farmingAdvisory.slice(0, 2).map((advice, idx) => (
+                  <ul className="ks-weather-advisory ks-explore-scroll">
+                    {weather.farmingAdvisory.map((advice, idx) => (
                       <li key={idx}>{advice}</li>
                     ))}
                   </ul>
@@ -2288,7 +2403,7 @@ if (showFeatureHub) {
                 {Array.isArray(forecast) && forecast.length > 0 && (
                   <div className="ks-forecast-strip">
                     <p className="ks-forecast-title">{activeExplore.forecastTitle}</p>
-                    <div className="ks-forecast-grid">
+                    <div className="ks-forecast-grid ks-forecast-grid-scroll">
                       {forecast.slice(0, 7).map((day, idx) => (
                         <div key={`${day.date}-${idx}`} className="ks-forecast-card">
                           <span className="ks-forecast-date">{day.date}</span>
@@ -2304,20 +2419,69 @@ if (showFeatureHub) {
             )}
           </article>
 
-          <article className="ks-explore-card">
+          <article className="ks-explore-card ks-explore-card-expand">
             <span className="ks-feature-tag">Live Data</span>
             <h3>{activeExplore.marketTitle}</h3>
             <p>{activeExplore.marketDesc}</p>
             <div className="ks-explore-actions">
               <button className="ks-cta" onClick={fetchMarket}>{activeExplore.refreshPrices}</button>
             </div>
-            <p className="ks-inline-note">
-              {marketLoading
-                ? activeExplore.loadingMarket
-                : market.length
-                ? `${market[0]?.commodity || activeExplore.cropLabel}: Rs ${market[0]?.modalPrice || "-"} / ${market[0]?.unit || activeExplore.unitFallback}`
-                : activeExplore.noMarketLoaded}
-            </p>
+            {marketLoading ? (
+              <p className="ks-inline-note">{activeExplore.loadingMarket}</p>
+            ) : market.length ? (
+              <div className="ks-explore-detail">
+                <p className="ks-explore-detail-head">{activeExplore.marketListHeading}</p>
+                <ul className="ks-explore-scroll ks-market-hub-list">
+                  {market.map((row, idx) => (
+                    <li key={`${row.commodity}-${idx}`}>
+                      <span className="ks-market-hub-crop">
+                        {row.icon ? `${row.icon} ` : ""}{row.commodity || activeExplore.cropLabel}
+                      </span>
+                      <span className="ks-market-hub-price">
+                        ₹{row.modalPrice ?? "-"} / {row.unit || activeExplore.unitFallback}
+                      </span>
+                      {(row.state || row.mandi) && (
+                        <span className="ks-market-hub-meta">
+                          {[row.mandi, row.state].filter(Boolean).join(" · ")}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <p className="ks-inline-note">{activeExplore.noMarketLoaded}</p>
+            )}
+          </article>
+        </section>
+
+        <section className="ks-explore-row">
+          <article id="feature-schemes" className="ks-explore-card ks-explore-card-expand">
+            <span className="ks-feature-tag">Policy</span>
+            <h3>{activeExplore.govtSchemesTitle}</h3>
+            <p>{activeExplore.govtSchemesDesc}</p>
+            <div className="ks-explore-embed ks-explore-scroll">
+              <GovtSchemes
+                key={`hub-schemes-${exploreStateLabel}-${exploreCropForPolicy}-${language}`}
+                userState={exploreStateLabel}
+                userCrop={exploreCropForPolicy}
+                userLanguage={exploreSchemeLanguage}
+              />
+            </div>
+          </article>
+
+          <article id="feature-crop-insurance" className="ks-explore-card ks-explore-card-expand">
+            <span className="ks-feature-tag">Risk</span>
+            <h3>{activeExplore.cropFailureTitle}</h3>
+            <p>{activeExplore.cropFailureDesc}</p>
+            <div className="ks-explore-embed ks-explore-embed-light ks-explore-scroll">
+              <CropInsurance
+                key={`hub-insurance-${exploreStateLabel}-${exploreCropForPolicy}-${language}`}
+                userState={exploreStateLabel}
+                userCrop={exploreCropForPolicy}
+                userLanguage={exploreSchemeLanguage}
+              />
+            </div>
           </article>
         </section>
 
@@ -2336,7 +2500,7 @@ if (showFeatureHub) {
         </section>
 
         <section className="ks-explore-row ks-explore-row-single">
-          <article id="feature-history" className="ks-explore-card">
+          <article id="feature-history" className="ks-explore-card ks-explore-card-expand">
             <span className="ks-feature-tag">ML</span>
             <h3>{activeExplore.historyTitle}</h3>
             <p>{activeExplore.historyDesc}</p>
@@ -2347,7 +2511,7 @@ if (showFeatureHub) {
             {historyLoading ? (
               <p className="ks-inline-note">{activeExplore.loadingHistory}</p>
             ) : historyPreview.length > 0 ? (
-              <div className="ks-history-preview-list">
+              <div className="ks-explore-scroll ks-history-preview-list">
                 {historyPreview.map((item) => (
                   <div key={item._id} className="ks-history-preview-item">
                     <strong>{item.detectedPlant?.name || activeExplore.plantFallback}</strong>
@@ -2924,33 +3088,101 @@ if (showFeatureHub) {
 
                 {diseaseResult.details?.predictions && (
                   <div style={{ marginTop: 10, fontSize: 12, color: COLORS.text }}>
-                    {diseaseResult.details.localized?.topCrop != null && diseaseResult.details.localized.topCrop !== "" ? (
-                      <p style={{ margin: "4px 0" }}>
-                        <b>Crop / plant:</b> {diseaseResult.details.localized.topCrop}
-                      </p>
-                    ) : (
-                      diseaseResult.details.plant && (
+                    {/* Top Prediction Card */}
+                    <div
+                      style={{
+                        background: "#f1f8e9",
+                        borderRadius: 8,
+                        padding: 15,
+                        marginBottom: 15,
+                        borderLeft: `4px solid #e65100`,
+                      }}
+                    >
+                      <p style={{ margin: "0 0 8px 0", fontWeight: 600, color: "#2e7d32" }}>⚕️ Top prediction</p>
+                      
+                      {diseaseResult.details.localized?.topCrop != null && diseaseResult.details.localized.topCrop !== "" ? (
                         <p style={{ margin: "4px 0" }}>
-                          <b>Crop / plant:</b> {diseaseResult.details.plant}
+                          <b>Crop / plant:</b> {diseaseResult.details.localized.topCrop}
                         </p>
-                      )
-                    )}
-                    <p style={{ margin: "4px 0", wordBreak: "break-word" }}>
-                      <b>Model label:</b> {diseaseResult.details.name}
-                    </p>
-                    <p style={{ margin: "8px 0 4px 0", fontWeight: 600 }}>All scores</p>
-                    <ul style={{ margin: 0, paddingLeft: 18 }}>
-                      {(diseaseResult.details.localized?.predictions?.length > 0
-                        ? diseaseResult.details.localized.predictions
-                        : diseaseResult.details.predictions
-                      )
-                        .slice(0, 5)
-                        .map((p, i) => (
-                          <li key={i} style={{ margin: "2px 0" }}>
-                            {p.label}: {p.confidencePercent ?? Math.round(p.score * 1000) / 10}%
-                          </li>
+                      ) : (
+                        diseaseResult.details.plant && (
+                          <p style={{ margin: "4px 0" }}>
+                            <b>Crop / plant:</b> {diseaseResult.details.plant}
+                          </p>
+                        )
+                      )}
+                      
+                      <p style={{ margin: "4px 0" }}>
+                        <b>Condition:</b> {diseaseResult.details.localized?.topCondition || diseaseResult.details.diseaseName}
+                      </p>
+                      
+                      <p style={{ margin: "4px 0", wordBreak: "break-word" }}>
+                        <b>Model label:</b> {diseaseResult.details.name}
+                      </p>
+                      
+                      <p style={{ margin: "4px 0" }}>
+                        <b>Confidence:</b> {diseaseResult.details.confidencePercent}%
+                      </p>
+                      
+                      <div
+                        style={{
+                          marginTop: "8px",
+                          height: "6px",
+                          background: "#e0e0e0",
+                          borderRadius: "3px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${Math.min(100, diseaseResult.details.confidencePercent)}%`,
+                            height: "100%",
+                            background: "#ff9800",
+                            transition: "width 0.3s ease",
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* All Class Scores */}
+                    <div
+                      style={{
+                        background: "#f1f8e9",
+                        borderRadius: 8,
+                        padding: 15,
+                      }}
+                    >
+                      <p style={{ margin: "0 0 12px 0", fontWeight: 600, color: "#43a047" }}>📋 All class scores</p>
+                      {diseaseResult.details.localized?.predictions?.length > 0 && (
+                        <p style={{ fontSize: 11, color: "#666", margin: "0 0 10px 0" }}>
+                          Labels are translated; percentages from model.
+                        </p>
+                      )}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {(diseaseResult.details.localized?.predictions?.length > 0
+                          ? diseaseResult.details.localized.predictions
+                          : diseaseResult.details.predictions
+                        ).map((p, i, arr) => (
+                          <div
+                            key={i}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              paddingBottom: "8px",
+                              borderBottom: i < arr.length - 1 ? "1px solid #a5d6a7" : "none",
+                            }}
+                          >
+                            <span style={{ color: "#1b5e20", wordBreak: "break-word", flex: 1 }}>
+                              {p.label}
+                            </span>
+                            <span style={{ fontWeight: 600, color: "#2e7d32", whiteSpace: "nowrap", marginLeft: "12px" }}>
+                              {p.confidencePercent ?? Math.round(p.score * 1000) / 10}%
+                            </span>
+                          </div>
                         ))}
-                    </ul>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -3055,43 +3287,7 @@ if (showFeatureHub) {
               </select>
             </div>
 
-            {/* View Toggle */}
-            {selectedCrop !== "Select" && (
-              <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-                <button
-                  onClick={() => setCalendarView("timeline")}
-                  style={{
-                    padding: "6px 14px",
-                    borderRadius: 20,
-                    border: "none",
-                    background: calendarView === "timeline" ? COLORS.primary : COLORS.accent,
-                    color: calendarView === "timeline" ? "#fff" : COLORS.text,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontSize: 13,
-                  }}
-                >
-                  📊 Timeline
-                </button>
-                <button
-                  onClick={() => setCalendarView("list")}
-                  style={{
-                    padding: "6px 14px",
-                    borderRadius: 20,
-                    border: "none",
-                    background: calendarView === "list" ? COLORS.primary : COLORS.accent,
-                    color: calendarView === "list" ? "#fff" : COLORS.text,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontSize: 13,
-                  }}
-                >
-                  📋 List
-                </button>
-              </div>
-            )}
-
-            {/* Calendar Content */}
+            {/* Calendar Content - Always Timeline View */}
             {selectedCrop !== "Select" && (
               <div
                 style={{
@@ -3100,8 +3296,8 @@ if (showFeatureHub) {
                   padding: 16,
                   boxShadow: "0 2px 8px #ffb30022",
                   width: "100%",
-                  maxHeight: 400,
-                  overflowY: "auto",
+                  minHeight: "auto",
+                  display: "block",
                 }}
               >
                 {/* Crop Header with Icon */}
@@ -3114,14 +3310,14 @@ if (showFeatureHub) {
                       {selectedCrop}
                     </h3>
                     <span style={{ fontSize: 12, color: "#666" }}>
-                      {cropOptions.find((c) => c.name === selectedCrop)?.calendar.length} stages
+                      {cropOptions.find((c) => c.name === selectedCrop)?.calendar?.length || 0} stages
                     </span>
                   </div>
                 </div>
 
-                {/* Timeline View */}
-                {calendarView === "timeline" && (
-                  <div style={{ position: "relative", paddingLeft: 20 }}>
+                {/* Timeline View - Always Displayed */}
+                {cropOptions.find((c) => c.name === selectedCrop)?.calendar?.length > 0 ? (
+                <div style={{ position: "relative", paddingLeft: 20 }}>
                     {/* Vertical Line */}
                     <div style={{
                       position: "absolute",
@@ -3148,7 +3344,9 @@ if (showFeatureHub) {
                               position: "relative",
                               marginBottom: 16,
                               paddingLeft: 20,
-                              animation: `fadeIn 0.3s ease ${idx * 0.1}s both`,
+                              display: "block",
+                              opacity: 1,
+                              visibility: "visible",
                             }}
                           >
                             {/* Stage Circle */}
@@ -3260,84 +3458,9 @@ if (showFeatureHub) {
                         );
                       })}
                   </div>
-                )}
-
-                {/* List View */}
-                {calendarView === "list" && (
-                  <div>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-                      <thead>
-                        <tr style={{ background: COLORS.primary, color: "#fff" }}>
-                          <th style={{ padding: 10, textAlign: "left", borderRadius: "8px 0 0 0" }}>#</th>
-                          <th style={{ padding: 10, textAlign: "left" }}>Stage</th>
-                          <th style={{ padding: 10, textAlign: "center" }}>Date</th>
-                          <th style={{ padding: 10, textAlign: "center", borderRadius: "0 8px 0 0" }}>🔔</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {cropOptions
-                          .find((c) => c.name === selectedCrop)
-                          ?.calendar.map((item, idx, arr) => {
-                            const currentStage = getCurrentStage(arr);
-                            const isCompleted = idx < currentStage;
-                            const isCurrent = idx === currentStage;
-                            
-                            return (
-                              <tr 
-                                key={idx}
-                                style={{
-                                  background: isCurrent ? "#fff8e1" : isCompleted ? "#e8f5e9" : "#fff",
-                                  borderBottom: "1px solid #eee",
-                                }}
-                              >
-                                <td style={{ 
-                                  padding: 10, 
-                                  fontWeight: 600,
-                                  color: isCompleted ? COLORS.primary : "#666",
-                                }}>
-                                  {isCompleted ? "✓" : idx + 1}
-                                </td>
-                                <td style={{ padding: 10 }}>
-                                  <div style={{ fontWeight: 500 }}>{item.stage}</div>
-                                  {item.tip && (
-                                    <div style={{ fontSize: 11, color: "#666", marginTop: 3 }}>
-                                      💡 {item.tip}
-                                    </div>
-                                  )}
-                                </td>
-                                <td style={{ padding: 10, textAlign: "center" }}>
-                                  <span style={{
-                                    background: "#ffb300",
-                                    color: "#fff",
-                                    padding: "3px 8px",
-                                    borderRadius: 4,
-                                    fontSize: 11,
-                                    fontWeight: 600,
-                                  }}>
-                                    {item.date}
-                                  </span>
-                                </td>
-                                <td style={{ padding: 10, textAlign: "center" }}>
-                                  <button
-                                    onClick={() => addCropReminder(selectedCrop, item.stage, item.date)}
-                                    style={{
-                                      background: isReminderSet(selectedCrop, item.stage) ? COLORS.primary : "transparent",
-                                      color: isReminderSet(selectedCrop, item.stage) ? "#fff" : "#666",
-                                      border: "1px solid #ddd",
-                                      borderRadius: 4,
-                                      padding: "4px 8px",
-                                      cursor: "pointer",
-                                      fontSize: 14,
-                                    }}
-                                  >
-                                    🔔
-                                  </button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                      </tbody>
-                    </table>
+                ) : (
+                  <div style={{ padding: 20, textAlign: "center", color: "#999" }}>
+                    <p>No stages data available for this crop</p>
                   </div>
                 )}
 
@@ -4175,8 +4298,6 @@ if (showFeatureHub) {
   {/* Price List */}
   <div style={{ 
     width: "100%", 
-    maxHeight: 280, 
-    overflowY: "auto",
     background: "#fafafa",
     borderRadius: 8,
     padding: 8,
@@ -4482,6 +4603,56 @@ if (showFeatureHub) {
               Find agricultural suppliers, equipment dealers, and service
               providers
             </p>
+          </section>
+
+          {/* Govt Schemes Card */}
+          <section
+            style={{
+              background: COLORS.card,
+              borderRadius: 12,
+              boxShadow: COLORS.cardShadow,
+              padding: "18px 14px",
+              minWidth: 220,
+              maxWidth: 900,
+              flex: "1 1 220px",
+              marginBottom: 16,
+              display: "flex",
+              flexDirection: "column",
+              animation: "cardEntrance 0.9s cubic-bezier(.5,1.5,.5,1)",
+            }}
+          >
+            <div style={{ width: "100%", borderRadius: 8, overflow: "hidden" }}>
+              <GovtSchemes
+                userLanguage={
+                  { en: "English", hi: "Hindi", pa: "Punjabi", ta: "Tamil" }[language] || "English"
+                }
+              />
+            </div>
+          </section>
+
+          {/* Crop Insurance Card */}
+          <section
+            style={{
+              background: COLORS.card,
+              borderRadius: 12,
+              boxShadow: COLORS.cardShadow,
+              padding: "18px 14px",
+              minWidth: 220,
+              maxWidth: 900,
+              flex: "1 1 220px",
+              marginBottom: 16,
+              display: "flex",
+              flexDirection: "column",
+              animation: "cardEntrance 0.9s cubic-bezier(.5,1.5,.5,1)",
+            }}
+          >
+            <div style={{ width: "100%", borderRadius: 8, overflow: "hidden" }}>
+              <CropInsurance
+                userLanguage={
+                  { en: "English", hi: "Hindi", pa: "Punjabi", ta: "Tamil" }[language] || "English"
+                }
+              />
+            </div>
           </section>
 
         </div>

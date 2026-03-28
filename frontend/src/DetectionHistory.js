@@ -16,7 +16,7 @@ const COLORS = {
 };
 
 function DetectionHistory({ userId }) {
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const API_URL = process.env.REACT_APP_API_URL || "https://kris-sarthi-1.onrender.com";
   const [detections, setDetections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

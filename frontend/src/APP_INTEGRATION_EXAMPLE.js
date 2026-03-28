@@ -23,7 +23,7 @@ const COLORS = {
   inputBorder: "#a5d6a7",
 };
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API_URL = process.env.REACT_APP_API_URL || "https://kris-sarthi-1.onrender.com";
 
 function App() {
   // Existing state hooks
