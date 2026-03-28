@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: krishi-saarthi-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: MONGODB_URI
+        scope: build
+        value: mongodb+srv://2023nitsgr278_db_user:AfNZe5MaRqdQQngE@cluster0.hzhwwzn.mongodb.net/?appName=Cluster0
+      - key: GEMINI_API_KEY
+        scope: build
+        value: AIzaSyA5iu-lVWHk7zmN_ErSOans11polczCmaA
+      - key: JWT_SECRET
+        scope: build
+        value: krishi-sarthi-secret-key-2026
+      - key: API_KEY
+        scope: build
+        value: 7c580e248ccf66e076a5a8428fae5c08

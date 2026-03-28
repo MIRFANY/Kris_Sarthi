@@ -1,0 +1,51 @@
+{
+  "short_name": "Krishi Saarthi",
+  "name": "Krishi Saarthi - Agricultural Assistant",
+  "description": "Your AI-powered agricultural assistant for farming advice, crop tracking, and market prices",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#43a047",
+  "background_color": "#f6fff8",
+  "categories": ["productivity", "agriculture"],
+  "screenshots": [
+    {
+      "src": "logo512.png",
+      "sizes": "540x720",
+      "type": "image/png"
+    }
+  ]
+}
