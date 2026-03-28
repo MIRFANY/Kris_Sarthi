@@ -1,32 +1,48 @@
 import React, { useState } from "react";
 import axios from "axios";
+import "./App.css";
 import { injectAnimationStyles } from "./AnimationStyles";
 import ReadPopup from "./ReadPopup";
 import PlantImageDetection from "./PlantImageDetection";
 import DetectionHistory from "./DetectionHistory";
-// --- Green-White Color Palette ---
+// --- Explore Route Dark Palette (aligned with landing page) ---
 const COLORS = {
-  background: "#f6fff8", // very light greenish white
-  card: "#ffffff", // pure white
-  cardShadow: "0 4px 16px #b7e4c7", // soft green shadow
-  primary: "#43a047", // lively green
-  primaryDark: "#2e7d32", // deeper green
-  accent: "#b7e4c7", // mint green accent
-  border: "#a5d6a7", // light green border
-  text: "#1b5e20", // dark green text
-  buttonText: "#fff", // white for buttons
-  buttonHover: "#388e3c", // slightly darker green
-  inputBg: "#f1f8e9", // pale green for inputs
-  inputBorder: "#a5d6a7",
+  background: "#060a06",
+  card: "rgba(255,255,255,0.03)",
+  cardShadow: "0 24px 50px rgba(0,0,0,0.35)",
+  primary: "#7fff6a",
+  primaryDark: "#3d8b37",
+  accent: "rgba(127,255,106,0.07)",
+  border: "rgba(127,255,106,0.22)",
+  text: "#f0f4ee",
+  buttonText: "#f0f4ee",
+  buttonHover: "#92ff82",
+  inputBg: "rgba(255,255,255,0.05)",
+  inputBorder: "rgba(127,255,106,0.25)",
 };
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 function App() {
+  const GUEST_USER_ID = "000000000000000000000001";
   // State hooks - MUST be inside the component
   const [userId, setUserId] = useState(null);
   const [selectedCrops, setSelectedCrops] = useState([]);
-  const [currentView, setCurrentView] = useState("home"); // home, detection, or history
+  const [currentView, setCurrentView] = useState(() => {
+    if (typeof window === "undefined") return "home";
+    return localStorage.getItem("ks-current-view") || "home";
+  }); // home, detection, or history
+  const [showFeatureHub, setShowFeatureHub] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("ks-active-screen") === "explore";
+  });
+  const [activeButtonGuideIndex, setActiveButtonGuideIndex] = useState(0);
+  const [showButtonGuide, setShowButtonGuide] = useState(true);
+  const [activeFeatureGuideIndex, setActiveFeatureGuideIndex] = useState(0);
+  const [showFeatureGuide, setShowFeatureGuide] = useState(true);
+  const [featureGuideCycle, setFeatureGuideCycle] = useState(0);
+  const [historyPreview, setHistoryPreview] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   // Login handler
   const handleLogin = async (email, password) => {
@@ -1235,38 +1251,1316 @@ const filteredMarket = market.filter(item =>
   item.mandi.toLowerCase().includes(marketSearch.toLowerCase())
 );
 
+const landingFeatures = [
+  {
+    tag: "AI Powered",
+    title: "Disease and Pest Detection",
+    desc: "Upload a crop photo and get AI-based plant identification, disease signals, severity hints, and practical treatment direction in simple language.",
+  },
+  {
+    tag: "Live Data",
+    title: "Market Prices",
+    desc: "Check mandi rates by state and crop, compare trends, and take better selling decisions based on current market movement instead of guesswork.",
+  },
+  {
+    tag: "Local",
+    title: "Weather Forecast",
+    desc: "Use your real location weather with farming advisories like rain alerts, spray timing, heat warnings, and daily field planning guidance.",
+  },
+  {
+    tag: "Calendar",
+    title: "Crop Calendar",
+    desc: "Follow a stage-wise crop roadmap from land preparation to harvest with reminders and actionable tips to avoid missing key operations.",
+  },
+  {
+    tag: "Smart Chat",
+    title: "GreenGeenie Assistant",
+    desc: "Ask farming questions in your preferred language and get instant AI responses for crop care, market planning, and weather-based actions.",
+  },
+  {
+    tag: "ML",
+    title: "Plant Detection History",
+    desc: "View previous scan reports in one place, track crop health over time, and spot whether conditions are improving or getting worse.",
+  },
+];
+
+const landingContent = {
+  en: {
+    eyebrow: "Agricultural Assistant",
+    heroLine1: "Smart Farming",
+    heroLine2: "for",
+    heroAccent: "Bharat",
+    heroDesc:
+      "Detect crop issues, watch mandi prices, plan operations, and get weather-driven decisions in one clean app.",
+    explore: "Explore Features",
+    howItWorks: "How it works",
+    suiteEyebrow: "Full Feature Suite",
+    suiteTitle: "Six tools. One powerful app.",
+    guideButton: "Replay guide cards",
+    buttonGuides: {
+      navExplore: "Opens the full feature dashboard.",
+      heroExplore: "Jump directly to tools and start using features.",
+      howItWorks: "Scroll to feature explanations and working flow.",
+      replay: "Restart rotating guide cards for demo narration.",
+    },
+    buttonRoutes: {
+      navExplore: "Feature Hub dashboard",
+      heroExplore: "Feature Hub home",
+      howItWorks: "Feature explanation section",
+      replay: "Feature guide replay",
+    },
+    flowTitle: "How it works in real farming",
+    flowDesc: "From image to action: Krishi Saarthi turns field data into practical daily decisions.",
+    flowDetailTitle: "What happens at each stage",
+    flowDetailDesc: "This is not just information display. Each module converts input into field-ready action.",
+    flowDetails: [
+      {
+        title: "Farmer Input",
+        desc: "Crop photo, selected crop, location, and language become the base context for guidance.",
+      },
+      {
+        title: "AI + Live Data Engine",
+        desc: "Plant analysis, weather signals, and mandi rates combine into one practical decision layer.",
+      },
+      {
+        title: "Actionable Output",
+        desc: "Simple next steps: when to spray, when to irrigate, and when selling conditions look better.",
+      },
+    ],
+    featureGuides: [
+      {
+        access: "How to access: Explore Features -> Disease and Pest Detection -> Upload crop photo.",
+        meaning: "What it means: AI checks crop health, detects possible disease signs, and suggests next action.",
+      },
+      {
+        access: "How to access: Explore Features -> Market Prices -> Select state and fetch prices.",
+        meaning: "What it means: You can compare mandi rates before deciding where and when to sell.",
+      },
+      {
+        access: "How to access: Explore Features -> Weather Prediction -> Detect location.",
+        meaning: "What it means: Get local forecast plus practical advisories for irrigation and spraying.",
+      },
+      {
+        access: "How to access: Explore Features -> Crop Calendar -> Select your crop.",
+        meaning: "What it means: Follow stage-by-stage reminders from sowing to harvesting.",
+      },
+      {
+        access: "How to access: Use GreenGeenie chat or voice buttons in feature hub.",
+        meaning: "What it means: Ask farming questions in your preferred language and get instant guidance.",
+      },
+      {
+        access: "How to access: Open Plant Detection History from navigation.",
+        meaning: "What it means: Review past scan reports and monitor crop condition changes over time.",
+      },
+    ],
+    steps: [
+      {
+        num: "01",
+        title: "Capture and Choose",
+        desc: "Farmer chooses language, uploads crop image, and selects crop or state details.",
+      },
+      {
+        num: "02",
+        title: "Analyze and Compare",
+        desc: "AI analyzes crop health while weather and mandi modules fetch local insights.",
+      },
+      {
+        num: "03",
+        title: "Act with Confidence",
+        desc: "Farmer gets clear next steps for spraying, irrigation, selling, and timing.",
+      },
+    ],
+    features: landingFeatures,
+  },
+  hi: {
+    eyebrow: "कृषि सहायक",
+    heroLine1: "स्मार्ट खेती",
+    heroLine2: "के लिए",
+    heroAccent: "भारत",
+    heroDesc:
+      "फसल समस्याएं पहचानें, मंडी भाव देखें, खेती की योजना बनाएं और मौसम आधारित फैसले एक ही ऐप में लें।",
+    explore: "फीचर्स देखें",
+    howItWorks: "कैसे काम करता है",
+    suiteEyebrow: "पूरा फीचर सूट",
+    suiteTitle: "छह टूल्स, एक दमदार ऐप।",
+    guideButton: "गाइड कार्ड फिर दिखाएं",
+    buttonGuides: {
+      navExplore: "पूरा फीचर डैशबोर्ड खोलता है।",
+      heroExplore: "सीधे टूल्स पर जाएं और फीचर इस्तेमाल करें।",
+      howItWorks: "नीचे जाकर फीचर समझें और फ्लो देखें।",
+      replay: "डेमो के लिए गाइड कार्ड फिर से चलाएं।",
+    },
+    flowTitle: "वास्तविक खेती में यह कैसे काम करता है",
+    flowDesc: "फोटो से फैसले तक: ऐप खेत की जानकारी को सीधे उपयोगी कार्रवाई में बदलता है।",
+    flowDetailTitle: "हर चरण में क्या होता है",
+    flowDetailDesc: "यह सिर्फ जानकारी नहीं दिखाता, बल्कि सीधे काम की सलाह देता है।",
+    flowDetails: [
+      { title: "किसान इनपुट", desc: "फोटो, फसल चयन, लोकेशन और भाषा के आधार पर संदर्भ तैयार होता है।" },
+      { title: "AI + लाइव डेटा", desc: "प्लांट विश्लेषण, मौसम और मंडी डेटा मिलकर निर्णय सहायता देते हैं।" },
+      { title: "स्पष्ट कार्रवाई", desc: "कब छिड़काव, कब सिंचाई और कब बिक्री बेहतर है, यह साफ बताया जाता है।" },
+    ],
+    steps: [
+      {
+        num: "01",
+        title: "इनपुट दें",
+        desc: "किसान भाषा चुनता है, फोटो अपलोड करता है और फसल/राज्य चुनता है।",
+      },
+      {
+        num: "02",
+        title: "विश्लेषण",
+        desc: "AI फसल का विश्लेषण करता है और मौसम व मंडी मॉड्यूल डेटा लाते हैं।",
+      },
+      {
+        num: "03",
+        title: "कार्रवाई",
+        desc: "छिड़काव, सिंचाई, बिक्री और समय पर स्पष्ट सलाह मिलती है।",
+      },
+    ],
+    features: [
+      {
+        tag: "AI",
+        title: "रोग और कीट पहचान",
+        desc: "फसल की फोटो स्कैन करें और संभावित समस्या के लिए तुरंत मार्गदर्शन पाएं।",
+      },
+      {
+        tag: "Live",
+        title: "मंडी भाव",
+        desc: "राज्य और फसल के अनुसार लाइव कीमतें देखें और सही समय पर बिक्री करें।",
+      },
+      {
+        tag: "Local",
+        title: "मौसम पूर्वानुमान",
+        desc: "स्थानीय मौसम और खेती सलाह से रोज़ाना बेहतर निर्णय लें।",
+      },
+      {
+        tag: "Calendar",
+        title: "फसल कैलेंडर",
+        desc: "बुवाई से कटाई तक चरणबद्ध रिमाइंडर और कार्ययोजना पाएं।",
+      },
+      {
+        tag: "Chat",
+        title: "ग्रीनजीनी सहायक",
+        desc: "अपनी भाषा में खेती से जुड़ा सवाल पूछें और तुरंत मदद लें।",
+      },
+      {
+        tag: "History",
+        title: "डिटेक्शन हिस्ट्री",
+        desc: "पुरानी जांच रिपोर्ट देखें और फसल की हालत का ट्रैक रखें।",
+      },
+    ],
+  },
+  pa: {
+    eyebrow: "ਖੇਤੀ ਸਹਾਇਕ",
+    heroLine1: "ਸਮਾਰਟ ਖੇਤੀ",
+    heroLine2: "ਲਈ",
+    heroAccent: "ਭਾਰਤ",
+    heroDesc:
+      "ਫਸਲ ਸਮੱਸਿਆਵਾਂ ਪਛਾਣੋ, ਮੰਡੀ ਰੇਟ ਵੇਖੋ, ਕੰਮ ਦੀ ਯੋਜਨਾ ਬਣਾਓ ਅਤੇ ਮੌਸਮ ਅਧਾਰਤ ਫੈਸਲੇ ਲਓ।",
+    explore: "ਫੀਚਰ ਵੇਖੋ",
+    howItWorks: "ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ",
+    suiteEyebrow: "ਪੂਰਾ ਫੀਚਰ ਸੂਟ",
+    suiteTitle: "ਛੇ ਟੂਲ, ਇੱਕ ਤਾਕਤਵਰ ਐਪ।",
+    guideButton: "ਗਾਈਡ ਕਾਰਡ ਦੁਬਾਰਾ ਵੇਖੋ",
+    buttonGuides: {
+      navExplore: "ਪੂਰਾ ਫੀਚਰ ਡੈਸ਼ਬੋਰਡ ਖੋਲ੍ਹਦਾ ਹੈ।",
+      heroExplore: "ਸਿੱਧਾ ਟੂਲਾਂ 'ਤੇ ਜਾਓ ਤੇ ਵਰਤਣਾ ਸ਼ੁਰੂ ਕਰੋ।",
+      howItWorks: "ਫੀਚਰ ਅਤੇ ਵਰਕਫਲੋ ਵੇਖਣ ਲਈ ਹੇਠਾਂ ਜਾਓ।",
+      replay: "ਡੈਮੋ ਲਈ ਗਾਈਡ ਕਾਰਡ ਮੁੜ ਚਲਾਓ।",
+    },
+    flowTitle: "ਅਸਲੀ ਖੇਤੀ ਵਿੱਚ ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ",
+    flowDesc: "ਫੋਟੋ ਤੋਂ ਫੈਸਲੇ ਤੱਕ: ਐਪ ਖੇਤ ਦੀ ਜਾਣਕਾਰੀ ਨੂੰ ਕੰਮ ਦੀ ਸਲਾਹ ਵਿੱਚ ਬਦਲਦਾ ਹੈ।",
+    flowDetailTitle: "ਹਰ ਪੜਾਅ ਵਿੱਚ ਕੀ ਹੁੰਦਾ ਹੈ",
+    flowDetailDesc: "ਇਹ ਸਿਰਫ ਜਾਣਕਾਰੀ ਨਹੀਂ, ਸਿੱਧੀ ਕੰਮ ਦੀ ਸਲਾਹ ਦਿੰਦਾ ਹੈ।",
+    flowDetails: [
+      { title: "ਕਿਸਾਨ ਇਨਪੁੱਟ", desc: "ਫੋਟੋ, ਫਸਲ ਚੋਣ, ਲੋਕੇਸ਼ਨ ਅਤੇ ਭਾਸ਼ਾ ਨਾਲ ਕਾਂਟੈਕਸਟ ਬਣਦਾ ਹੈ।" },
+      { title: "AI + ਲਾਈਵ ਡਾਟਾ", desc: "ਪਲਾਂਟ ਵਿਸ਼ਲੇਸ਼ਣ, ਮੌਸਮ ਅਤੇ ਮੰਡੀ ਡਾਟਾ ਮਿਲ ਕੇ ਮਦਦ ਕਰਦੇ ਹਨ।" },
+      { title: "ਸਪਸ਼ਟ ਕਾਰਵਾਈ", desc: "ਕਦੋਂ ਸਪਰੇ, ਕਦੋਂ ਪਾਣੀ ਤੇ ਕਦੋਂ ਵੇਚਣਾ ਵਧੀਆ ਹੈ, ਸਾਫ ਦਿਖਦਾ ਹੈ।" },
+    ],
+    steps: [
+      {
+        num: "01",
+        title: "ਇਨਪੁੱਟ ਦਿਓ",
+        desc: "ਕਿਸਾਨ ਭਾਸ਼ਾ ਚੁਣਦਾ, ਫੋਟੋ ਅਪਲੋਡ ਕਰਦਾ ਅਤੇ ਫਸਲ/ਸਟੇਟ ਚੁਣਦਾ ਹੈ।",
+      },
+      {
+        num: "02",
+        title: "ਵਿਸ਼ਲੇਸ਼ਣ",
+        desc: "AI ਫਸਲ ਦੀ ਹਾਲਤ ਵੇਖਦਾ ਹੈ ਅਤੇ ਮੌਸਮ/ਮੰਡੀ ਡਾਟਾ ਜੋੜਦਾ ਹੈ।",
+      },
+      {
+        num: "03",
+        title: "ਕਾਰਵਾਈ",
+        desc: "ਸਪਸ਼ਟ ਅਗਲੇ ਕਦਮ ਮਿਲਦੇ ਹਨ: ਪਾਣੀ, ਦਵਾਈ, ਵੇਚਣ ਦਾ ਸਮਾਂ।",
+      },
+    ],
+    features: [
+      {
+        tag: "AI",
+        title: "ਬਿਮਾਰੀ ਤੇ ਕੀਟ ਪਛਾਣ",
+        desc: "ਫਸਲ ਦੀ ਤਸਵੀਰ ਸਕੈਨ ਕਰੋ ਅਤੇ ਸਮੱਸਿਆ ਲਈ ਤੁਰੰਤ ਸਲਾਹ ਲਵੋ।",
+      },
+      {
+        tag: "Live",
+        title: "ਮੰਡੀ ਭਾਅ",
+        desc: "ਰਾਜ ਅਤੇ ਫਸਲ ਮੁਤਾਬਕ ਤਾਜ਼ਾ ਰੇਟ ਵੇਖੋ ਤੇ ਠੀਕ ਵੇਲੇ ਵੇਚੋ।",
+      },
+      {
+        tag: "Local",
+        title: "ਮੌਸਮ ਅਨੁਮਾਨ",
+        desc: "ਲੋਕਲ ਮੌਸਮ ਅਤੇ ਖੇਤੀ ਸਲਾਹ ਨਾਲ ਦਿਨ-प्रतिदਿਨ ਫੈਸਲੇ ਸੁਧਾਰੋ।",
+      },
+      {
+        tag: "Calendar",
+        title: "ਫਸਲ ਕੈਲੰਡਰ",
+        desc: "ਬੀਜਾਈ ਤੋਂ ਕਟਾਈ ਤੱਕ ਸਟੇਜ-ਵਾਇਜ਼ ਰਿਮਾਈਂਡਰ ਪਾਓ।",
+      },
+      {
+        tag: "Chat",
+        title: "GreenGeenie ਸਹਾਇਕ",
+        desc: "ਆਪਣੀ ਭਾਸ਼ਾ ਵਿੱਚ ਸਵਾਲ ਪੁੱਛੋ ਅਤੇ ਤੁਰੰਤ ਮਦਦ ਲਵੋ।",
+      },
+      {
+        tag: "History",
+        title: "ਡਿਟੈਕਸ਼ਨ ਹਿਸਟਰੀ",
+        desc: "ਪੁਰਾਣੇ ਨਤੀਜੇ ਵੇਖੋ ਅਤੇ ਫਸਲ ਦੀ ਹਾਲਤ ਟਰੈਕ ਕਰੋ।",
+      },
+    ],
+  },
+  ta: {
+    eyebrow: "விவசாய உதவியாளர்",
+    heroLine1: "ஸ்மார்ட் விவசாயம்",
+    heroLine2: "இந்தியாவிற்காக",
+    heroAccent: "பாரத்",
+    heroDesc:
+      "பயிர் பிரச்சினைகளை கண்டறியவும், சந்தை விலைகளை பார்க்கவும், செயல்களை திட்டமிடவும், வானிலை அடிப்படையில் முடிவு எடுக்கவும்.",
+    explore: "அம்சங்களை பாருங்கள்",
+    howItWorks: "எப்படி வேலை செய்கிறது",
+    suiteEyebrow: "முழு அம்சத் தொகுப்பு",
+    suiteTitle: "ஆறு கருவிகள். ஒரு சக்திவாய்ந்த பயன்பாடு.",
+    guideButton: "வழிகாட்டி கார்டுகளை மீண்டும் காண்க",
+    buttonGuides: {
+      navExplore: "முழு அம்ச டாஷ்போர்டை திறக்கும்.",
+      heroExplore: "நேராக கருவிகளுக்கு சென்று பயன்படுத்த தொடங்கவும்.",
+      howItWorks: "அம்ச விளக்கம் மற்றும் ஓட்டத்தைப் பார்க்க கீழே செல்லவும்.",
+      replay: "டெமோவுக்கு வழிகாட்டி கார்டுகளை மீண்டும் தொடங்கவும்.",
+    },
+    flowTitle: "நிஜ விவசாயத்தில் இது எப்படி செயல்படுகிறது",
+    flowDesc: "படத்திலிருந்து செயலுக்கு: பயன்பாடு விவசாய தரவை நேரடி முடிவுகளாக மாற்றுகிறது.",
+    flowDetailTitle: "ஒவ்வொரு கட்டத்திலும் என்ன நடக்கிறது",
+    flowDetailDesc: "இது தகவல் மட்டும் அல்ல, நேரடி செயல் வழிகாட்டலை தருகிறது.",
+    flowDetails: [
+      { title: "விவசாயி உள்ளீடு", desc: "படம், பயிர் தேர்வு, இடம், மொழி ஆகியவற்றால் சூழல் உருவாகிறது." },
+      { title: "AI + நேரடி தரவு", desc: "பயிர் பகுப்பாய்வு, வானிலை, சந்தை தரவு ஒன்றாக இணைகிறது." },
+      { title: "செயல்பாட்டு முடிவு", desc: "எப்போது தெளிக்க, எப்போது நீர்ப்பாசனம் செய்ய, எப்போது விற்பது என்று தெளிவாக கிடைக்கும்." },
+    ],
+    steps: [
+      {
+        num: "01",
+        title: "உள்ளீடு கொடுக்கவும்",
+        desc: "விவசாயி மொழியை தேர்ந்து படம் பதிவேற்றி பயிர்/மாநிலத்தை தேர்வுசெய்கிறார்.",
+      },
+      {
+        num: "02",
+        title: "பகுப்பாய்வு",
+        desc: "AI பயிரை பகுப்பாய்வு செய்கிறது; வானிலை மற்றும் சந்தை தரவு சேர்க்கப்படுகிறது.",
+      },
+      {
+        num: "03",
+        title: "நடவடிக்கை",
+        desc: "நீர்ப்பாசனம், தெளிப்பு, விற்பனை நேரம் போன்ற தெளிவான அடுத்த படிகள் கிடைக்கும்.",
+      },
+    ],
+    features: [
+      {
+        tag: "AI",
+        title: "நோய் மற்றும் பூச்சி கண்டறிதல்",
+        desc: "பயிர் படத்தை ஸ்கேன் செய்து சாத்தியமான பிரச்சினைக்கு உடனடி வழிகாட்டுதல் பெறுங்கள்.",
+      },
+      {
+        tag: "Live",
+        title: "சந்தை விலைகள்",
+        desc: "மாநிலம் மற்றும் பயிர் அடிப்படையில் நேரடி விலைகளை பார்த்து சரியான நேரத்தில் விற்பனை செய்யுங்கள்.",
+      },
+      {
+        tag: "Local",
+        title: "வானிலை முன்னறிவு",
+        desc: "உள்ளூர் வானிலை மற்றும் விவசாய ஆலோசனையுடன் தினசரி முடிவுகளை மேம்படுத்துங்கள்.",
+      },
+      {
+        tag: "Calendar",
+        title: "பயிர் காலண்டர்",
+        desc: "விதைப்பு முதல் அறுவடை வரை கட்டம் கட்டமாக நினைவூட்டல்கள் பெறுங்கள்.",
+      },
+      {
+        tag: "Chat",
+        title: "GreenGeenie உதவியாளர்",
+        desc: "உங்கள் மொழியில் கேள்வி கேட்டு உடனடி உதவி பெறுங்கள்.",
+      },
+      {
+        tag: "History",
+        title: "கண்டறிதல் வரலாறு",
+        desc: "முந்தைய பகுப்பாய்வுகளை பார்த்து பயிர் நல மாற்றத்தை கண்காணிக்கவும்.",
+      },
+    ],
+  },
+};
+
+const helperLabels = {
+  en: {
+    goesTo: "Goes to",
+    miniGuide: "Mini guide",
+    whatThisDoes: "What this does",
+    whereToFind: "Where to find",
+    openExploreFallback: "Open Explore Features to access this module.",
+  },
+  hi: {
+    goesTo: "यहां जाता है",
+    miniGuide: "छोटा गाइड",
+    whatThisDoes: "यह क्या करता है",
+    whereToFind: "कहां मिलेगा",
+    openExploreFallback: "इस मॉड्यूल के लिए फीचर्स सेक्शन खोलें।",
+  },
+  pa: {
+    goesTo: "ਇੱਥੇ ਜਾਂਦਾ ਹੈ",
+    miniGuide: "ਮਿੰਨੀ ਗਾਈਡ",
+    whatThisDoes: "ਇਹ ਕੀ ਕਰਦਾ ਹੈ",
+    whereToFind: "ਕਿੱਥੇ ਮਿਲੇਗਾ",
+    openExploreFallback: "ਇਹ ਮੋਡੀਊਲ ਵਰਤਣ ਲਈ ਫੀਚਰ ਖੋਲ੍ਹੋ।",
+  },
+  ta: {
+    goesTo: "இங்கு செல்கிறது",
+    miniGuide: "சிறு வழிகாட்டி",
+    whatThisDoes: "இது என்ன செய்கிறது",
+    whereToFind: "எங்கே கிடைக்கும்",
+    openExploreFallback: "இந்த அம்சத்தை திறக்க Explore Features செல்லவும்.",
+  },
+};
+
+const buttonRouteLabels = {
+  en: {
+    navExplore: "Feature Hub dashboard",
+    heroExplore: "Feature Hub home",
+    howItWorks: "Feature explanation section",
+    replay: "Feature guide replay",
+  },
+  hi: {
+    navExplore: "फीचर हब डैशबोर्ड",
+    heroExplore: "फीचर हब होम",
+    howItWorks: "फीचर जानकारी सेक्शन",
+    replay: "गाइड रीप्ले",
+  },
+  pa: {
+    navExplore: "ਫੀਚਰ ਹੱਬ ਡੈਸ਼ਬੋਰਡ",
+    heroExplore: "ਫੀਚਰ ਹੱਬ ਹੋਮ",
+    howItWorks: "ਫੀਚਰ ਜਾਣਕਾਰੀ ਸੈਕਸ਼ਨ",
+    replay: "ਗਾਈਡ ਰੀਪਲੇ",
+  },
+  ta: {
+    navExplore: "அம்ச ஹப் டாஷ்போர்டு",
+    heroExplore: "அம்ச ஹப் முகப்பு",
+    howItWorks: "அம்ச விளக்கம் பகுதி",
+    replay: "வழிகாட்டி மீள்பார்வு",
+  },
+};
+
+const featureGuidesByLanguage = {
+  en: landingContent.en.featureGuides,
+  hi: [
+    { access: "कैसे खोलें: फीचर्स देखें -> रोग और कीट पहचान -> फसल फोटो अपलोड करें।", meaning: "यह क्या करता है: AI फसल की जांच करके संभावित बीमारी/कीट संकेत और अगला कदम बताता है।" },
+    { access: "कैसे खोलें: फीचर्स देखें -> मंडी भाव -> राज्य चुनें और डेटा लाएं।", meaning: "यह क्या करता है: बिक्री से पहले अलग-अलग मंडी भाव की तुलना करने में मदद करता है।" },
+    { access: "कैसे खोलें: फीचर्स देखें -> मौसम पूर्वानुमान -> लोकेशन पता करें।", meaning: "यह क्या करता है: स्थानीय मौसम और सिंचाई/स्प्रे के लिए सलाह देता है।" },
+    { access: "कैसे खोलें: फीचर्स देखें -> फसल कैलेंडर -> फसल चुनें।", meaning: "यह क्या करता है: बुवाई से कटाई तक चरणवार रिमाइंडर देता है।" },
+    { access: "कैसे खोलें: फीचर हब में ग्रीनजीनी चैट/वॉइस बटन का उपयोग करें।", meaning: "यह क्या करता है: आपकी भाषा में खेती से जुड़े सवालों का तुरंत जवाब देता है।" },
+    { access: "कैसे खोलें: नेविगेशन से डिटेक्शन हिस्ट्री खोलें।", meaning: "यह क्या करता है: पुराने स्कैन रिपोर्ट देखकर फसल की हालत ट्रैक करने में मदद करता है।" },
+  ],
+  pa: [
+    { access: "ਕਿਵੇਂ ਖੋਲ੍ਹੋ: ਫੀਚਰ ਵੇਖੋ -> ਬਿਮਾਰੀ ਤੇ ਕੀਟ ਪਛਾਣ -> ਫਸਲ ਫੋਟੋ ਅਪਲੋਡ ਕਰੋ।", meaning: "ਇਹ ਕੀ ਕਰਦਾ: AI ਫਸਲ ਦੀ ਹਾਲਤ ਵੇਖ ਕੇ ਸੰਭਾਵੀ ਸਮੱਸਿਆ ਅਤੇ ਅਗਲਾ ਕਦਮ ਦਿੰਦਾ ਹੈ।" },
+    { access: "ਕਿਵੇਂ ਖੋਲ੍ਹੋ: ਫੀਚਰ ਵੇਖੋ -> ਮੰਡੀ ਭਾਅ -> ਸਟੇਟ ਚੁਣੋ ਅਤੇ ਡਾਟਾ ਲਵੋ।", meaning: "ਇਹ ਕੀ ਕਰਦਾ: ਵੇਚਣ ਤੋਂ ਪਹਿਲਾਂ ਮੰਡੀ ਭਾਅ ਤੁਲਨਾ ਕਰਨ ਵਿੱਚ ਮਦਦ ਕਰਦਾ ਹੈ।" },
+    { access: "ਕਿਵੇਂ ਖੋਲ੍ਹੋ: ਫੀਚਰ ਵੇਖੋ -> ਮੌਸਮ ਅਨੁਮਾਨ -> ਲੋਕੇਸ਼ਨ ਡਿਟੈਕਟ ਕਰੋ।", meaning: "ਇਹ ਕੀ ਕਰਦਾ: ਲੋਕਲ ਮੌਸਮ ਨਾਲ ਪਾਣੀ ਅਤੇ ਸਪਰੇ ਲਈ ਸਲਾਹ ਦਿੰਦਾ ਹੈ।" },
+    { access: "ਕਿਵੇਂ ਖੋਲ੍ਹੋ: ਫੀਚਰ ਵੇਖੋ -> ਫਸਲ ਕੈਲੰਡਰ -> ਫਸਲ ਚੁਣੋ।", meaning: "ਇਹ ਕੀ ਕਰਦਾ: ਬੀਜਾਈ ਤੋਂ ਕਟਾਈ ਤੱਕ ਸਟੇਜ-ਵਾਇਜ਼ ਯਾਦ ਦਿਵਾਉਂਦਾ ਹੈ।" },
+    { access: "ਕਿਵੇਂ ਖੋਲ੍ਹੋ: ਫੀਚਰ ਹੱਬ ਵਿੱਚ GreenGeenie ਚੈਟ/ਵੋਇਸ ਬਟਨ ਵਰਤੋ।", meaning: "ਇਹ ਕੀ ਕਰਦਾ: ਤੁਹਾਡੀ ਭਾਸ਼ਾ ਵਿੱਚ ਖੇਤੀ ਸਵਾਲਾਂ ਦੇ ਤੁਰੰਤ ਜਵਾਬ ਦਿੰਦਾ ਹੈ।" },
+    { access: "ਕਿਵੇਂ ਖੋਲ੍ਹੋ: ਨੇਵੀਗੇਸ਼ਨ ਤੋਂ ਡਿਟੈਕਸ਼ਨ ਹਿਸਟਰੀ ਖੋਲ੍ਹੋ।", meaning: "ਇਹ ਕੀ ਕਰਦਾ: ਪੁਰਾਣੇ ਸਕੈਨ ਨਤੀਜੇ ਨਾਲ ਫਸਲ ਹਾਲਤ ਟਰੈਕ ਕਰ ਸਕਦੇ ਹੋ।" },
+  ],
+  ta: [
+    { access: "எப்படி திறப்பது: அம்சங்கள் -> நோய் மற்றும் பூச்சி கண்டறிதல் -> பயிர் படத்தை பதிவேற்றவும்.", meaning: "இது என்ன செய்கிறது: AI பயிர் நிலையை பகுப்பாய்வு செய்து அடுத்த நடவடிக்கையை சொல்கிறது." },
+    { access: "எப்படி திறப்பது: அம்சங்கள் -> சந்தை விலைகள் -> மாநிலத்தை தேர்வு செய்து தரவை பெறவும்.", meaning: "இது என்ன செய்கிறது: விற்பனைக்கு முன் மண்டி விலைகளை ஒப்பிட உதவுகிறது." },
+    { access: "எப்படி திறப்பது: அம்சங்கள் -> வானிலை -> இருப்பிடத்தை கண்டறியவும்.", meaning: "இது என்ன செய்கிறது: உள்ளூர் வானிலை மற்றும் பாசனம்/தெளிப்பு ஆலோசனையை தருகிறது." },
+    { access: "எப்படி திறப்பது: அம்சங்கள் -> பயிர் காலண்டர் -> பயிரை தேர்வு செய்யவும்.", meaning: "இது என்ன செய்கிறது: விதைப்பு முதல் அறுவடை வரை கட்டப்படியான நினைவூட்டலை வழங்குகிறது." },
+    { access: "எப்படி திறப்பது: அம்ச ஹபில் GreenGeenie அரட்டை/குரல் பொத்தான்களை பயன்படுத்தவும்.", meaning: "இது என்ன செய்கிறது: உங்கள் மொழியில் விவசாய கேள்விகளுக்கு உடனடி பதில் தருகிறது." },
+    { access: "எப்படி திறப்பது: வழிசெலுத்தலிலிருந்து கண்டறிதல் வரலாற்றை திறக்கவும்.", meaning: "இது என்ன செய்கிறது: பழைய ஸ்கேன் முடிவுகளை பார்த்து பயிர் நிலை மாற்றத்தை கண்காணிக்க உதவுகிறது." },
+  ],
+};
+
+const exploreContent = {
+  en: {
+    tabs: { home: "Home", detection: "Plant Detection", history: "History", back: "Back to Landing" },
+    heroEyebrow: "Feature Hub",
+    heroTitle: "Use all tools from one clean dashboard",
+    heroDesc: "Quick access to disease diagnosis, crop timeline, weather advisory, market signals, and voice-enabled assistant.",
+    diseaseTitle: "Disease and Pest Scan",
+    diseaseDesc: "Upload crop image to detect possible disease signals and see health guidance instantly.",
+    uploadPhoto: "Upload Crop Photo",
+    focusFeature: "Focus Feature",
+    analyzingImage: "Analyzing image...",
+    cropTimelineTitle: "Crop Timeline",
+    cropTimelineDesc: "Select a crop and follow stage-wise tasks from sowing to harvest with actionable reminders.",
+    cropTimelineSummary: "schedule includes",
+    cropTimelineStages: "stages.",
+    cropTimelineFallback: "Pick a crop to preview your seasonal plan.",
+    weatherTitle: "Weather and Advisory",
+    weatherDesc: "Fetch real location weather and get practical farming advisories for irrigation and spray timing.",
+    detectLocation: "Detect Location",
+    getWeather: "Get Weather",
+    fetchingWeather: "Fetching weather...",
+    noWeatherLoaded: "No weather loaded yet.",
+    forecastTitle: "7 Day Forecast",
+    humidity: "Humidity",
+    feelsLike: "Feels Like",
+    wind: "Wind",
+    rainProb: "Rain Prob",
+    marketTitle: "Market Snapshot",
+    marketDesc: "Compare mandi rates quickly and track your selected crop price trend before selling.",
+    refreshPrices: "Refresh Prices",
+    loadingMarket: "Loading market data...",
+    noMarketLoaded: "No market data loaded yet.",
+    cropLabel: "Crop",
+    unitFallback: "quintal",
+    assistantTitle: "GreenGeenie Assistant",
+    assistantDesc: "Ask farming questions in your language, use voice input, and get instant AI responses for practical field decisions.",
+    openAssistant: "Open Assistant",
+    voiceInput: "Voice Input",
+    historyTitle: "Plant Detection History",
+    historyDesc: "Recent detection results are listed here, so you can track crop health changes without opening another page.",
+    refreshHistory: "Refresh History View",
+    loadingHistory: "Loading recent detections...",
+    noHistory: "No detection history yet. Upload a crop photo to create records.",
+    plantFallback: "Plant",
+    conditionFallback: "Condition unknown",
+  },
+  hi: {
+    tabs: { home: "होम", detection: "प्लांट डिटेक्शन", history: "हिस्ट्री", back: "लैंडिंग पर वापस" },
+    heroEyebrow: "फीचर हब",
+    heroTitle: "एक डैशबोर्ड से सभी टूल्स चलाएं",
+    heroDesc: "रोग पहचान, फसल टाइमलाइन, मौसम सलाह, मंडी संकेत और वॉइस सहायक एक ही जगह।",
+    diseaseTitle: "रोग और कीट स्कैन",
+    diseaseDesc: "फसल फोटो अपलोड करें और तुरंत रोग संकेत व स्वास्थ्य मार्गदर्शन पाएं।",
+    uploadPhoto: "फसल फोटो अपलोड करें",
+    focusFeature: "फीचर पर जाएं",
+    analyzingImage: "छवि का विश्लेषण हो रहा है...",
+    cropTimelineTitle: "फसल टाइमलाइन",
+    cropTimelineDesc: "फसल चुनें और बुवाई से कटाई तक चरणवार कार्य देखें।",
+    cropTimelineSummary: "शेड्यूल में",
+    cropTimelineStages: "चरण हैं।",
+    cropTimelineFallback: "मौसमी योजना देखने के लिए फसल चुनें।",
+    weatherTitle: "मौसम और सलाह",
+    weatherDesc: "लोकेशन आधारित मौसम और सिंचाई/स्प्रे के लिए उपयोगी सलाह पाएं।",
+    detectLocation: "लोकेशन पता करें",
+    getWeather: "मौसम देखें",
+    fetchingWeather: "मौसम देखा जा रहा है...",
+    noWeatherLoaded: "अभी मौसम डेटा उपलब्ध नहीं है।",
+    forecastTitle: "7 दिन का पूर्वानुमान",
+    humidity: "नमी",
+    feelsLike: "महसूस तापमान",
+    wind: "हवा",
+    rainProb: "बारिश संभावना",
+    marketTitle: "मंडी स्नैपशॉट",
+    marketDesc: "मंडी भाव तुलना करें और बिक्री से पहले सही निर्णय लें।",
+    refreshPrices: "भाव रीफ्रेश करें",
+    loadingMarket: "मंडी डेटा लोड हो रहा है...",
+    noMarketLoaded: "अभी मंडी डेटा उपलब्ध नहीं है।",
+    cropLabel: "फसल",
+    unitFallback: "क्विंटल",
+    assistantTitle: "ग्रीनजीनी सहायक",
+    assistantDesc: "अपनी भाषा में सवाल पूछें, वॉइस इनपुट करें और तुरंत जवाब पाएं।",
+    openAssistant: "सहायक खोलें",
+    voiceInput: "वॉइस इनपुट",
+    historyTitle: "डिटेक्शन हिस्ट्री",
+    historyDesc: "हाल की रिपोर्ट यहां दिखती हैं ताकि आप बदलाव ट्रैक कर सकें।",
+    refreshHistory: "हिस्ट्री रीफ्रेश करें",
+    loadingHistory: "हाल की रिपोर्ट लोड हो रही हैं...",
+    noHistory: "अभी कोई डिटेक्शन हिस्ट्री नहीं है। फसल फोटो अपलोड करें।",
+    plantFallback: "पौधा",
+    conditionFallback: "स्थिति अज्ञात",
+  },
+  pa: {
+    tabs: { home: "ਹੋਮ", detection: "ਪਲਾਂਟ ਡਿਟੈਕਸ਼ਨ", history: "ਹਿਸਟਰੀ", back: "ਲੈਂਡਿੰਗ ਤੇ ਵਾਪਸ" },
+    heroEyebrow: "ਫੀਚਰ ਹੱਬ",
+    heroTitle: "ਇੱਕ ਡੈਸ਼ਬੋਰਡ ਤੋਂ ਸਾਰੇ ਟੂਲ ਵਰਤੋ",
+    heroDesc: "ਬਿਮਾਰੀ ਪਛਾਣ, ਫਸਲ ਟਾਈਮਲਾਈਨ, ਮੌਸਮ ਸਲਾਹ, ਮੰਡੀ ਸੰਕੇਤ ਅਤੇ ਵੋਇਸ ਸਹਾਇਕ ਇਕੱਠੇ।",
+    diseaseTitle: "ਬਿਮਾਰੀ ਅਤੇ ਕੀਟ ਸਕੈਨ",
+    diseaseDesc: "ਫਸਲ ਫੋਟੋ ਅਪਲੋਡ ਕਰੋ ਅਤੇ ਤੁਰੰਤ ਸਿਹਤ ਸਲਾਹ ਲਵੋ।",
+    uploadPhoto: "ਫਸਲ ਫੋਟੋ ਅਪਲੋਡ ਕਰੋ",
+    focusFeature: "ਫੀਚਰ ਤੇ ਜਾਓ",
+    analyzingImage: "ਤਸਵੀਰ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...",
+    cropTimelineTitle: "ਫਸਲ ਟਾਈਮਲਾਈਨ",
+    cropTimelineDesc: "ਫਸਲ ਚੁਣੋ ਅਤੇ ਬੀਜਾਈ ਤੋਂ ਕਟਾਈ ਤੱਕ ਸਟੇਜ-ਵਾਇਜ਼ ਕੰਮ ਵੇਖੋ।",
+    cropTimelineSummary: "ਸ਼ਡਿਊਲ ਵਿੱਚ",
+    cropTimelineStages: "ਸਟੇਜ ਹਨ।",
+    cropTimelineFallback: "ਮੌਸਮੀ ਯੋਜਨਾ ਵੇਖਣ ਲਈ ਫਸਲ ਚੁਣੋ।",
+    weatherTitle: "ਮੌਸਮ ਅਤੇ ਸਲਾਹ",
+    weatherDesc: "ਲੋਕੇਸ਼ਨ ਅਧਾਰਤ ਮੌਸਮ ਅਤੇ ਸਿੰਚਾਈ/ਸਪਰੇ ਲਈ ਸਲਾਹ ਪਾਓ।",
+    detectLocation: "ਲੋਕੇਸ਼ਨ ਪਤਾ ਕਰੋ",
+    getWeather: "ਮੌਸਮ ਵੇਖੋ",
+    fetchingWeather: "ਮੌਸਮ ਲੱਭ ਰਿਹਾ ਹੈ...",
+    noWeatherLoaded: "ਹਾਲੇ ਮੌਸਮ ਡਾਟਾ ਨਹੀਂ ਮਿਲਿਆ।",
+    forecastTitle: "7 ਦਿਨ ਦਾ ਅਨੁਮਾਨ",
+    humidity: "ਨਮੀ",
+    feelsLike: "ਅਨੁਭਵ ਤਾਪਮਾਨ",
+    wind: "ਹਵਾ",
+    rainProb: "ਬਰਸਾਤ ਸੰਭਾਵਨਾ",
+    marketTitle: "ਮੰਡੀ ਸਨੈਪਸ਼ਾਟ",
+    marketDesc: "ਮੰਡੀ ਰੇਟ ਤੁਲਨਾ ਕਰੋ ਅਤੇ ਵੇਚਣ ਤੋਂ ਪਹਿਲਾਂ ਫੈਸਲਾ ਕਰੋ।",
+    refreshPrices: "ਰੇਟ ਰਿਫਰੈਸ਼ ਕਰੋ",
+    loadingMarket: "ਮੰਡੀ ਡਾਟਾ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
+    noMarketLoaded: "ਹਾਲੇ ਮੰਡੀ ਡਾਟਾ ਨਹੀਂ ਮਿਲਿਆ।",
+    cropLabel: "ਫਸਲ",
+    unitFallback: "ਕੁਇੰਟਲ",
+    assistantTitle: "GreenGeenie ਸਹਾਇਕ",
+    assistantDesc: "ਆਪਣੀ ਭਾਸ਼ਾ ਵਿੱਚ ਸਵਾਲ ਪੁੱਛੋ, ਵੋਇਸ ਵਰਤੋ ਅਤੇ ਤੁਰੰਤ ਜਵਾਬ ਲਵੋ।",
+    openAssistant: "ਸਹਾਇਕ ਖੋਲ੍ਹੋ",
+    voiceInput: "ਵੋਇਸ ਇਨਪੁੱਟ",
+    historyTitle: "ਡਿਟੈਕਸ਼ਨ ਹਿਸਟਰੀ",
+    historyDesc: "ਹਾਲੀਆ ਰਿਪੋਰਟ ਇੱਥੇ ਮਿਲਦੀ ਹੈ ਤਾਂ ਜੋ ਤੁਸੀਂ ਬਦਲਾਵ ਟਰੈਕ ਕਰੋ।",
+    refreshHistory: "ਹਿਸਟਰੀ ਰਿਫਰੈਸ਼ ਕਰੋ",
+    loadingHistory: "ਹਾਲੀਆ ਰਿਪੋਰਟ ਲੋਡ ਹੋ ਰਹੀਆਂ ਹਨ...",
+    noHistory: "ਹਾਲੇ ਕੋਈ ਡਿਟੈਕਸ਼ਨ ਹਿਸਟਰੀ ਨਹੀਂ। ਫਸਲ ਫੋਟੋ ਅਪਲੋਡ ਕਰੋ।",
+    plantFallback: "ਪੌਧਾ",
+    conditionFallback: "ਹਾਲਤ ਅਣਜਾਣ",
+  },
+  ta: {
+    tabs: { home: "முகப்பு", detection: "பிளாண்ட் கண்டறிதல்", history: "வரலாறு", back: "லேண்டிங்கிற்கு திரும்பு" },
+    heroEyebrow: "அம்ச ஹப்",
+    heroTitle: "ஒரே டாஷ்போர்டில் எல்லா கருவிகளும்",
+    heroDesc: "நோய் கண்டறிதல், பயிர் காலவரிசை, வானிலை ஆலோசனை, சந்தை தகவல், குரல் உதவி அனைத்தும் ஒரே இடத்தில்.",
+    diseaseTitle: "நோய் மற்றும் பூச்சி ஸ்கேன்",
+    diseaseDesc: "பயிர் படத்தை பதிவேற்றி உடனடி ஆரோக்கிய வழிகாட்டலை பெறுங்கள்.",
+    uploadPhoto: "பயிர் படத்தை பதிவேற்றவும்",
+    focusFeature: "அம்சத்தை திறக்கவும்",
+    analyzingImage: "படம் பகுப்பாய்வு செய்யப்படுகிறது...",
+    cropTimelineTitle: "பயிர் காலவரிசை",
+    cropTimelineDesc: "பயிரை தேர்ந்து விதைப்பு முதல் அறுவடை வரை கட்டப்படியான பணிகளைப் பின்பற்றுங்கள்.",
+    cropTimelineSummary: "அட்டவணையில்",
+    cropTimelineStages: "நிலைகள் உள்ளன.",
+    cropTimelineFallback: "பருவத் திட்டம் பார்க்க பயிரை தேர்வு செய்யவும்.",
+    weatherTitle: "வானிலை மற்றும் ஆலோசனை",
+    weatherDesc: "இருப்பிட வானிலை மற்றும் பாசனம்/தெளிப்பு பயன்பாட்டு ஆலோசனைகளை பெறுங்கள்.",
+    detectLocation: "இருப்பிடத்தை கண்டறி",
+    getWeather: "வானிலை பெற",
+    fetchingWeather: "வானிலை பெறப்படுகிறது...",
+    noWeatherLoaded: "இன்னும் வானிலை தரவு இல்லை.",
+    forecastTitle: "7 நாள் முன்னறிவு",
+    humidity: "ஈரப்பதம்",
+    feelsLike: "உணரும் வெப்பநிலை",
+    wind: "காற்று",
+    rainProb: "மழை வாய்ப்பு",
+    marketTitle: "சந்தை சுருக்கம்",
+    marketDesc: "மண்டி விலைகளை ஒப்பிட்டு விற்பனை முடிவை மேம்படுத்துங்கள்.",
+    refreshPrices: "விலை புதுப்பிக்க",
+    loadingMarket: "சந்தை தரவு ஏற்றப்படுகிறது...",
+    noMarketLoaded: "இன்னும் சந்தை தரவு இல்லை.",
+    cropLabel: "பயிர்",
+    unitFallback: "க்வின்டல்",
+    assistantTitle: "GreenGeenie உதவியாளர்",
+    assistantDesc: "உங்கள் மொழியில் கேளுங்கள், குரல் உள்ளீடு பயன்படுத்துங்கள், உடனடி பதில் பெறுங்கள்.",
+    openAssistant: "உதவியாளரை திறக்க",
+    voiceInput: "குரல் உள்ளீடு",
+    historyTitle: "கண்டறிதல் வரலாறு",
+    historyDesc: "சமீபத்திய அறிக்கைகள் இங்கே இருக்கும்; மாற்றங்களை கண்காணிக்கலாம்.",
+    refreshHistory: "வரலாற்றை புதுப்பிக்க",
+    loadingHistory: "சமீபத்திய அறிக்கைகள் ஏற்றப்படுகிறது...",
+    noHistory: "இன்னும் கண்டறிதல் வரலாறு இல்லை. பயிர் படம் பதிவேற்றவும்.",
+    plantFallback: "தாவரம்",
+    conditionFallback: "நிலை தெரியவில்லை",
+  },
+};
+
+const activeLanding = landingContent[language] || landingContent.en;
+const activeButtonGuides = activeLanding.buttonGuides || landingContent.en.buttonGuides;
+const activeButtonRoutes = buttonRouteLabels[language] || buttonRouteLabels.en;
+const activeFeatureGuides = featureGuidesByLanguage[language] || featureGuidesByLanguage.en;
+const activeHelperLabels = helperLabels[language] || helperLabels.en;
+const activeExplore = exploreContent[language] || exploreContent.en;
+const buttonGuideOrder = ["language", "heroExplore", "howItWorks"];
+const activeButtonGuideKey = buttonGuideOrder[activeButtonGuideIndex] || "language";
+const languageGuideRoutes = {
+  en: "Language selector",
+  hi: "भाषा चयन",
+  pa: "ਭਾਸ਼ਾ ਚੋਣ",
+  ta: "மொழி தேர்வு",
+};
+const languageGuideTexts = {
+  en: "Change app language for the landing and feature hub screens.",
+  hi: "लैंडिंग और फीचर हब की भाषा बदलें।",
+  pa: "ਲੈਂਡਿੰਗ ਅਤੇ ਫੀਚਰ ਹੱਬ ਲਈ ਭਾਸ਼ਾ ਬਦਲੋ।",
+  ta: "லேண்டிங் மற்றும் அம்ச ஹப் மொழியை மாற்றுங்கள்.",
+};
+const effectiveUserId = userId || GUEST_USER_ID;
+
+React.useEffect(() => {
+  if (showFeatureHub) return;
+
+  setShowButtonGuide(true);
+  setActiveButtonGuideIndex(0);
+  let hideTimeout;
+  let nextTimeout;
+  let cancelled = false;
+
+  const runButtonCycle = () => {
+    if (cancelled) return;
+
+    setShowButtonGuide(true);
+    hideTimeout = setTimeout(() => {
+      if (!cancelled) setShowButtonGuide(false);
+    }, 2500);
+
+    nextTimeout = setTimeout(() => {
+      if (cancelled) return;
+      setActiveButtonGuideIndex((prev) => (prev + 1) % buttonGuideOrder.length);
+      runButtonCycle();
+    }, 3800);
+  };
+
+  runButtonCycle();
+
+  return () => {
+    cancelled = true;
+    clearTimeout(hideTimeout);
+    clearTimeout(nextTimeout);
+  };
+}, [showFeatureHub, language]);
+
+React.useEffect(() => {
+  if (showFeatureHub) return;
+
+  setActiveFeatureGuideIndex(0);
+  setShowFeatureGuide(true);
+
+  let hideTimeout;
+  let nextTimeout;
+  let cancelled = false;
+
+  const runGuideCycle = () => {
+    if (cancelled) return;
+
+    setShowFeatureGuide(true);
+    hideTimeout = setTimeout(() => {
+      if (!cancelled) setShowFeatureGuide(false);
+    }, 2600);
+
+    nextTimeout = setTimeout(() => {
+      if (cancelled) return;
+      setActiveFeatureGuideIndex((prev) => (prev + 1) % activeLanding.features.length);
+      runGuideCycle();
+    }, 4300);
+  };
+
+  runGuideCycle();
+
+  return () => {
+    cancelled = true;
+    clearTimeout(hideTimeout);
+    clearTimeout(nextTimeout);
+  };
+}, [showFeatureHub, featureGuideCycle, language, activeLanding.features.length]);
+
+React.useEffect(() => {
+  if (!showFeatureHub) return;
+
+  const loadHistoryPreview = async () => {
+    try {
+      setHistoryLoading(true);
+      const response = await axios.get(`${API_URL}/api/plant-detection/history/${effectiveUserId}`);
+      setHistoryPreview(Array.isArray(response.data) ? response.data.slice(0, 3) : []);
+    } catch (err) {
+      setHistoryPreview([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  loadHistoryPreview();
+}, [showFeatureHub, effectiveUserId]);
+
+React.useEffect(() => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("ks-current-view", currentView);
+}, [currentView]);
+
+React.useEffect(() => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("ks-active-screen", showFeatureHub ? "explore" : "landing");
+}, [showFeatureHub]);
+
+if (!showFeatureHub) {
+  return (
+    <div className="ks-landing">
+      <div className="ks-grid" aria-hidden="true" />
+      <header className="ks-nav">
+        <div className="ks-brand">
+          <span className="ks-brand-mark">F</span>
+          <span>Krishi Saarthi</span>
+        </div>
+
+        <div className="ks-nav-actions">
+          <div className="ks-btn-guide-anchor">
+            <div className="ks-language-wrap">
+              <span className="ks-language-icon" aria-hidden="true">A</span>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="ks-language"
+                aria-label="Select language"
+              >
+                {Object.entries(languageNames).map(([code, name]) => (
+                  <option key={code} value={code}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+              <span className="ks-language-caret" aria-hidden="true">v</span>
+            </div>
+            {showButtonGuide && activeButtonGuideKey === "language" && (
+              <span className="ks-btn-guide" role="note">
+                <span className="ks-btn-guide-title">{activeHelperLabels.goesTo} {"->"} {languageGuideRoutes[language] || languageGuideRoutes.en}</span>
+                <p>{languageGuideTexts[language] || languageGuideTexts.en}</p>
+              </span>
+            )}
+          </div>
+          <div className="ks-btn-guide-anchor">
+            <button
+              className="ks-cta"
+              type="button"
+              onClick={() => {
+                setShowFeatureHub(true);
+                setCurrentView("home");
+              }}
+            >
+              {activeLanding.explore}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="ks-main">
+        <section className="ks-hero">
+          <p className="ks-eyebrow">{activeLanding.eyebrow}</p>
+          <h1>
+            {activeLanding.heroLine1}
+            <br />
+            {activeLanding.heroLine2} <em>{activeLanding.heroAccent}</em>
+          </h1>
+          <p className="ks-hero-copy">
+            {activeLanding.heroDesc}
+          </p>
+          <div className="ks-hero-actions">
+            <div className="ks-btn-guide-anchor">
+              <button
+                type="button"
+                className="ks-cta"
+                onClick={() => {
+                  setShowFeatureHub(true);
+                  setCurrentView("home");
+                }}
+              >
+                {activeLanding.explore}
+              </button>
+              {showButtonGuide && activeButtonGuideKey === "heroExplore" && (
+                <span className="ks-btn-guide" role="note">
+                  <span className="ks-btn-guide-title">{activeHelperLabels.goesTo} {"->"} {activeButtonRoutes.heroExplore}</span>
+                  <p>{activeButtonGuides.heroExplore}</p>
+                </span>
+              )}
+            </div>
+
+            <div className="ks-btn-guide-anchor">
+              <button
+                type="button"
+                className="ks-ghost"
+                onClick={() => document.getElementById("ks-features")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                {activeLanding.howItWorks}
+              </button>
+              {showButtonGuide && activeButtonGuideKey === "howItWorks" && (
+                <span className="ks-btn-guide" role="note">
+                  <span className="ks-btn-guide-title">{activeHelperLabels.goesTo} {"->"} {activeButtonRoutes.howItWorks}</span>
+                  <p>{activeButtonGuides.howItWorks}</p>
+                </span>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section id="ks-features" className="ks-features-wrap">
+          <p className="ks-eyebrow">{activeLanding.suiteEyebrow}</p>
+          <h2>{activeLanding.suiteTitle}</h2>
+          <div className="ks-guide-control-row">
+            <div className="ks-btn-guide-anchor">
+              <button
+                type="button"
+                className="ks-guide-btn"
+                onClick={() => {
+                  document.getElementById("ks-features")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  setFeatureGuideCycle((prev) => prev + 1);
+                }}
+              >
+                {activeLanding.guideButton || landingContent.en.guideButton}
+              </button>
+            </div>
+          </div>
+
+          <div className="ks-steps-wrap">
+            <div className="ks-steps-head">
+              <h3>{activeLanding.flowTitle}</h3>
+              <p>{activeLanding.flowDesc}</p>
+            </div>
+            <div className="ks-step-grid">
+              {activeLanding.steps.map((step, index) => (
+                <article className="ks-step-card" key={step.num + step.title}>
+                  <span className="ks-step-num">{step.num}</span>
+                  <h4>{step.title}</h4>
+                  <p>{step.desc}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="ks-flow-detail-wrap">
+            <h4>{activeLanding.flowDetailTitle || landingContent.en.flowDetailTitle}</h4>
+            <p>{activeLanding.flowDetailDesc || landingContent.en.flowDetailDesc}</p>
+            <div className="ks-flow-detail-grid">
+              {(activeLanding.flowDetails || landingContent.en.flowDetails).map((item) => (
+                <article key={item.title} className="ks-flow-detail-card">
+                  <h5>{item.title}</h5>
+                  <p>{item.desc}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="ks-feature-grid">
+            {activeLanding.features.map((feature, index) => (
+              <article key={feature.title} className="ks-feature-card" style={{ animationDelay: `${index * 0.07}s` }}>
+                <span className="ks-feature-tag">{feature.tag}</span>
+                <h3>{feature.title}</h3>
+                <p>{feature.desc}</p>
+                {showFeatureGuide && index === activeFeatureGuideIndex && (
+                  <div className="ks-guide-chip" role="note" aria-live="polite">
+                    <p>{activeFeatureGuides?.[index]?.access}</p>
+                    <p>{activeFeatureGuides?.[index]?.meaning}</p>
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+if (showFeatureHub) {
+  const jumpToFeature = (featureId, view) => {
+    setCurrentView(view);
+    setTimeout(() => {
+      document.getElementById(featureId)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
+  };
+
+  return (
+    <div className="ks-explore-root">
+      <div className="ks-grid" aria-hidden="true" />
+
+      <nav className="ks-explore-nav">
+        <div className="ks-brand">
+          <span className="ks-brand-mark">F</span>
+          <span>Krishi Saarthi</span>
+        </div>
+
+        <div className="ks-explore-nav-actions">
+          <button className={`ks-explore-tab ${currentView === "home" ? "ks-explore-tab-active" : ""}`} onClick={() => jumpToFeature("feature-top", "home")}>{activeExplore.tabs.home}</button>
+          <button className={`ks-explore-tab ${currentView === "detection" ? "ks-explore-tab-active" : ""}`} onClick={() => jumpToFeature("feature-detection", "detection")}>{activeExplore.tabs.detection}</button>
+          <button className={`ks-explore-tab ${currentView === "history" ? "ks-explore-tab-active" : ""}`} onClick={() => jumpToFeature("feature-history", "history")}>{activeExplore.tabs.history}</button>
+          <div className="ks-language-wrap">
+            <span className="ks-language-icon" aria-hidden="true">A</span>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="ks-language"
+              aria-label="Select language"
+            >
+              {Object.entries(languageNames).map(([code, name]) => (
+                <option key={code} value={code}>
+                  {name}
+                </option>
+              ))}
+            </select>
+            <span className="ks-language-caret" aria-hidden="true">v</span>
+          </div>
+          <button className="ks-ghost" onClick={() => setShowFeatureHub(false)}>{activeExplore.tabs.back}</button>
+        </div>
+      </nav>
+
+      <main className="ks-explore-main">
+        <section id="feature-top" className="ks-explore-hero">
+          <p className="ks-eyebrow">{activeExplore.heroEyebrow}</p>
+          <h1>{activeExplore.heroTitle}</h1>
+          <p>
+            {activeExplore.heroDesc}
+          </p>
+        </section>
+
+        <section className="ks-explore-row">
+          <article id="feature-detection" className="ks-explore-card">
+            <span className="ks-feature-tag">AI</span>
+            <h3>{activeExplore.diseaseTitle}</h3>
+            <p>{activeExplore.diseaseDesc}</p>
+            <input
+              id="diseaseInputModern"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              style={{ display: "none" }}
+              onChange={handleDiseaseImageChange}
+            />
+            <div className="ks-explore-actions">
+              <button className="ks-cta" onClick={() => document.getElementById("diseaseInputModern")?.click()}>
+                {activeExplore.uploadPhoto}
+              </button>
+              <button className="ks-ghost" onClick={() => jumpToFeature("feature-detection", "detection")}>{activeExplore.focusFeature}</button>
+            </div>
+            {diseaseLoading && <p className="ks-inline-note">{activeExplore.analyzingImage}</p>}
+            {diseaseResult && <p className="ks-inline-note">{diseaseResult.status}: {diseaseResult.message}</p>}
+          </article>
+
+          <article className="ks-explore-card">
+            <span className="ks-feature-tag">Calendar</span>
+            <h3>{activeExplore.cropTimelineTitle}</h3>
+            <p>{activeExplore.cropTimelineDesc}</p>
+            <div className="ks-explore-actions">
+              <select
+                value={selectedCrop}
+                onChange={(e) => setSelectedCrop(e.target.value)}
+                className="ks-explore-select"
+              >
+                {cropOptions.map((crop) => (
+                  <option key={crop.name} value={crop.name}>{crop.icon} {crop.name}</option>
+                ))}
+              </select>
+            </div>
+            <p className="ks-inline-note">
+              {selectedCrop !== "Select"
+                ? `${selectedCrop} ${activeExplore.cropTimelineSummary} ${cropOptions.find((c) => c.name === selectedCrop)?.calendar.length || 0} ${activeExplore.cropTimelineStages}`
+                : activeExplore.cropTimelineFallback}
+            </p>
+          </article>
+        </section>
+
+        <section className="ks-explore-row">
+          <article className="ks-explore-card">
+            <span className="ks-feature-tag">Local</span>
+            <h3>{activeExplore.weatherTitle}</h3>
+            <p>{activeExplore.weatherDesc}</p>
+            <div className="ks-explore-actions">
+              <button className="ks-ghost" onClick={fetchGeoLocation}>{activeExplore.detectLocation}</button>
+              <button className="ks-cta" onClick={fetchWeather}>{activeExplore.getWeather}</button>
+            </div>
+            <p className="ks-inline-note">
+              {weatherLoading
+                ? activeExplore.fetchingWeather
+                : weather
+                ? `${weather.location}: ${weather.temperature}, ${weather.condition}`
+                : weatherError || activeExplore.noWeatherLoaded}
+            </p>
+
+            {weather && !weatherLoading && (
+              <div className="ks-weather-panel">
+                <div className="ks-weather-top">
+                  <span>{weather.icon || "🌤️"}</span>
+                  <strong>{weather.temperature}</strong>
+                  <span>{weather.condition}</span>
+                </div>
+
+                <div className="ks-weather-metrics">
+                  <div className="ks-weather-chip">{activeExplore.humidity}: {weather.humidity || "N/A"}</div>
+                  <div className="ks-weather-chip">{activeExplore.feelsLike}: {weather.feelsLike || "N/A"}</div>
+                  <div className="ks-weather-chip">{activeExplore.wind}: {weather.windspeed || "N/A"}</div>
+                  <div className="ks-weather-chip">{activeExplore.rainProb}: {weather.precipProbability || "N/A"}</div>
+                </div>
+
+                {Array.isArray(weather.farmingAdvisory) && weather.farmingAdvisory.length > 0 && (
+                  <ul className="ks-weather-advisory">
+                    {weather.farmingAdvisory.slice(0, 2).map((advice, idx) => (
+                      <li key={idx}>{advice}</li>
+                    ))}
+                  </ul>
+                )}
+
+                {Array.isArray(forecast) && forecast.length > 0 && (
+                  <div className="ks-forecast-strip">
+                    <p className="ks-forecast-title">{activeExplore.forecastTitle}</p>
+                    <div className="ks-forecast-grid">
+                      {forecast.slice(0, 7).map((day, idx) => (
+                        <div key={`${day.date}-${idx}`} className="ks-forecast-card">
+                          <span className="ks-forecast-date">{day.date}</span>
+                          <span className="ks-forecast-icon">{day.icon}</span>
+                          <span className="ks-forecast-temp">{day.maxTemp} / {day.minTemp}</span>
+                          <span className="ks-forecast-rain">{day.rainProb}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </article>
+
+          <article className="ks-explore-card">
+            <span className="ks-feature-tag">Live Data</span>
+            <h3>{activeExplore.marketTitle}</h3>
+            <p>{activeExplore.marketDesc}</p>
+            <div className="ks-explore-actions">
+              <button className="ks-cta" onClick={fetchMarket}>{activeExplore.refreshPrices}</button>
+            </div>
+            <p className="ks-inline-note">
+              {marketLoading
+                ? activeExplore.loadingMarket
+                : market.length
+                ? `${market[0]?.commodity || activeExplore.cropLabel}: Rs ${market[0]?.modalPrice || "-"} / ${market[0]?.unit || activeExplore.unitFallback}`
+                : activeExplore.noMarketLoaded}
+            </p>
+          </article>
+        </section>
+
+        <section className="ks-explore-row ks-explore-row-single">
+          <article className="ks-explore-card">
+            <span className="ks-feature-tag">Smart Chat</span>
+            <h3>{activeExplore.assistantTitle}</h3>
+            <p>
+              {activeExplore.assistantDesc}
+            </p>
+            <div className="ks-explore-actions">
+              <button className="ks-cta" onClick={() => setChatOpen(true)}>{activeExplore.openAssistant}</button>
+              <button className="ks-ghost" onClick={handleVoiceInput}>{activeExplore.voiceInput}</button>
+            </div>
+          </article>
+        </section>
+
+        <section className="ks-explore-row ks-explore-row-single">
+          <article id="feature-history" className="ks-explore-card">
+            <span className="ks-feature-tag">ML</span>
+            <h3>{activeExplore.historyTitle}</h3>
+            <p>{activeExplore.historyDesc}</p>
+            <div className="ks-explore-actions">
+              <button className="ks-cta" onClick={() => jumpToFeature("feature-history", "history")}>{activeExplore.refreshHistory}</button>
+            </div>
+
+            {historyLoading ? (
+              <p className="ks-inline-note">{activeExplore.loadingHistory}</p>
+            ) : historyPreview.length > 0 ? (
+              <div className="ks-history-preview-list">
+                {historyPreview.map((item) => (
+                  <div key={item._id} className="ks-history-preview-item">
+                    <strong>{item.detectedPlant?.name || activeExplore.plantFallback}</strong>
+                    <span>{item.detectedDisease?.name || activeExplore.conditionFallback}</span>
+                    <small>{new Date(item.createdAt).toLocaleDateString()}</small>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="ks-inline-note">{activeExplore.noHistory}</p>
+            )}
+          </article>
+        </section>
+      </main>
+
+      {/* Floating Chat Button */}
+      <button
+        style={{
+          position: "fixed",
+          bottom: 32,
+          right: 32,
+          zIndex: 5000,
+          background: COLORS.primary,
+          color: COLORS.buttonText,
+          border: "none",
+          borderRadius: "50%",
+          width: 56,
+          height: 56,
+          boxShadow: "0 12px 28px rgba(0,0,0,0.35)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 28,
+          cursor: "pointer",
+          outline: "none",
+        }}
+        title="Open GreenGeenie"
+        onClick={() => setChatOpen(true)}
+      >
+        <span role="img" aria-label="Chat">💬</span>
+      </button>
+
+      {/* GreenGeenie Modal */}
+      {chatOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.45)",
+            zIndex: 6000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={() => setChatOpen(false)}
+        >
+          <div
+            style={{
+              background: "#0e170e",
+              border: `1px solid ${COLORS.border}`,
+              borderRadius: 18,
+              boxShadow: "0 24px 60px rgba(0,0,0,0.45)",
+              minWidth: 320,
+              maxWidth: 400,
+              width: "90vw",
+              minHeight: 380,
+              maxHeight: 520,
+              display: "flex",
+              flexDirection: "column",
+              padding: 0,
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                background: "rgba(127,255,106,0.1)",
+                borderBottom: `1px solid ${COLORS.border}`,
+                color: COLORS.text,
+                borderTopLeftRadius: 18,
+                borderTopRightRadius: 18,
+                padding: "16px 20px",
+                fontWeight: 700,
+                fontSize: 20,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <span>{t.chatbot}</span>
+              <button
+                onClick={() => setChatOpen(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: COLORS.text,
+                  fontSize: 22,
+                  cursor: "pointer",
+                  fontWeight: 700,
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div
+              ref={chatContainerRef}
+              style={{
+                flex: 1,
+                padding: 18,
+                overflowY: "auto",
+                background: "rgba(255,255,255,0.02)",
+              }}
+            >
+              {chatHistory.length === 0 && !chatLoading && (
+                <div style={{ color: COLORS.text, opacity: 0.7, textAlign: "center", marginTop: 40 }}>
+                  {t.askAnything}
+                </div>
+              )}
+              {chatHistory.map((msg, idx) => (
+                <div key={idx} style={{ margin: "10px 0", textAlign: msg.from === "user" ? "right" : "left" }}>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      background: msg.from === "user" ? "rgba(127,255,106,0.16)" : "rgba(255,255,255,0.06)",
+                      color: COLORS.text,
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: 12,
+                      padding: "8px 14px",
+                      maxWidth: "75%",
+                      fontSize: 15,
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {msg.text}
+                  </span>
+                </div>
+              ))}
+              {chatLoading && <div style={{ color: COLORS.text, opacity: 0.7 }}>{t.thinking}</div>}
+            </div>
+            <form onSubmit={sendChatMessage} style={{ display: "flex", gap: 8, padding: 12, borderTop: `1px solid ${COLORS.border}` }}>
+              <input
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder={t.typeMessage}
+                style={{
+                  flex: 1,
+                  borderRadius: 10,
+                  border: `1px solid ${COLORS.border}`,
+                  padding: "10px 12px",
+                  outline: "none",
+                  background: "rgba(255,255,255,0.05)",
+                  color: COLORS.text,
+                }}
+              />
+              <button type="submit" style={{ ...buttonStyle, margin: 0 }} disabled={chatLoading}>{t.send}</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <ReadPopup />
+    </div>
+  );
+}
+
   return (
     <div
       style={{
         minHeight: "100vh",
         background: COLORS.background,
-        fontFamily: "Segoe UI, Arial, sans-serif",
+        fontFamily: "Inter, Segoe UI, Arial, sans-serif",
         padding: 0,
         margin: 0,
         position: "relative",
-        overflow: "hidden",
+        overflowX: "hidden",
       }}
     >
       {/* Navbar */}
       <nav
         style={{
-          width: "96%",
-          height: 56,
-          background: COLORS.primary,
-          color: COLORS.buttonText,
+          width: "100%",
+          minHeight: 62,
+          background: "rgba(6,10,6,0.84)",
+          color: COLORS.text,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           padding: "0 32px",
-          boxShadow: COLORS.cardShadow,
+          borderBottom: `1px solid ${COLORS.border}`,
+          backdropFilter: "blur(16px)",
           fontWeight: 700,
           fontSize: 22,
           letterSpacing: 1.5,
           zIndex: 100,
-          position: "relative",
+          position: "sticky",
+          top: 0,
         }}
       >
-        <span style={{ fontWeight: 800, fontSize: 24, letterSpacing: 2 }}>
+        <span style={{ fontWeight: 800, fontSize: 24, letterSpacing: 1.2, color: COLORS.text }}>
           🌱 Krishi Saarthi
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
@@ -1382,7 +2676,7 @@ const filteredMarket = market.filter(item =>
               borderRadius: 6,
               border: `1px solid ${COLORS.border}`,
               fontSize: 15,
-              background: COLORS.card,
+              background: COLORS.inputBg,
               color: COLORS.text,
               fontWeight: 600,
             }}
@@ -1485,9 +2779,10 @@ const filteredMarket = market.filter(item =>
           background: COLORS.accent,
           borderRadius: 24,
           boxShadow: COLORS.cardShadow,
+          border: `1px solid ${COLORS.border}`,
           padding: "32px 16px",
-          maxWidth: 900,
-          margin: "40px auto 0 auto",
+          maxWidth: 1120,
+          margin: "28px auto 0 auto",
           minHeight: 400,
         }}
       >
@@ -3157,16 +4452,16 @@ const filteredMarket = market.filter(item =>
         </div>
       </div>
       </>
-      ) : currentView === "detection" && userId ? (
+      ) : currentView === "detection" ? (
         <PlantImageDetection 
-          userId={userId} 
+          userId={userId || GUEST_USER_ID} 
           language={language}
           onDetectionComplete={(detection) => {
             showNotification("✅ Plant detection completed! Check history to view results.", "success");
           }}
         />
-      ) : currentView === "history" && userId ? (
-        <DetectionHistory userId={userId} />
+      ) : currentView === "history" ? (
+        <DetectionHistory userId={userId || GUEST_USER_ID} />
       ) : null}
       {/* Footer */}
       <footer
@@ -3576,21 +4871,21 @@ const cardStyle = {
 };
 const cardTitle = {
   marginBottom: 18,
-  color: "#388e3c",
+  color: COLORS.text,
   fontSize: 24,
-  fontWeight: 600,
+  fontWeight: 500,
   letterSpacing: 1,
 };
 const buttonStyle = {
   background: COLORS.primary,
   color: COLORS.buttonText,
-  border: "none",
+  border: `1px solid ${COLORS.border}`,
   borderRadius: 8,
   padding: "7px 18px",
   fontSize: 15,
   fontWeight: 600,
   cursor: "pointer",
-  boxShadow: COLORS.cardShadow,
+  boxShadow: "0 10px 24px rgba(0,0,0,0.25)",
   transition: "background 0.2s, box-shadow 0.2s, transform 0.13s, scale 0.13s",
   outline: "none",
   margin: "6px 0",
@@ -3605,13 +4900,13 @@ if (typeof window !== "undefined" && !window.__agrinext_btn_anim) {
       transition: background 0.2s, box-shadow 0.2s, transform 0.13s, scale 0.13s;
     }
     button:hover, button:focus, input[type="button"]:hover, input[type="button"]:focus, input[type="submit"]:hover, input[type="submit"]:focus {
-      background: #388e3c !important;
-      box-shadow: 0 6px 24px #43a04744 !important;
-      transform: scale(1.07) !important;
+      background: #92ff82 !important;
+      box-shadow: 0 8px 26px rgba(127,255,106,0.26) !important;
+      transform: scale(1.03) !important;
     }
     input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus {
-      box-shadow: 0 0 0 6px #43a04744 !important;
-      border-color: #43a047 !important;
+      box-shadow: 0 0 0 4px rgba(127,255,106,0.2) !important;
+      border-color: #7fff6a !important;
       transition: box-shadow 0.2s, border 0.2s;
     }
   `;
@@ -3641,8 +4936,10 @@ const iconButtonStyle = {
 const inputStyle = {
   padding: "8px 12px",
   borderRadius: 6,
-  border: "1px solid #bdbdbd",
+  border: `1px solid ${COLORS.inputBorder}`,
   fontSize: 16,
+  color: COLORS.text,
+  background: COLORS.inputBg,
   marginBottom: 10,
   width: "100%",
   boxSizing: "border-box",
@@ -3661,9 +4958,11 @@ const modalOverlayStyle = {
   zIndex: 1000,
 };
 const modalStyle = {
-  background: "white",
+  background: "#0d150d",
+  color: COLORS.text,
   borderRadius: 12,
-  boxShadow: "0 4px 24px #0003",
+  border: `1px solid ${COLORS.border}`,
+  boxShadow: "0 20px 40px rgba(0,0,0,0.35)",
   padding: "32px 28px",
   minWidth: 280,
   maxWidth: 350,

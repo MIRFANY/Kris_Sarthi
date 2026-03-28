@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════════════════════╗
+║           KRISHI SAARTHI — DESIGN REFERENCE FILE FOR GITHUB COPILOT        ║
+║                                                                              ║
+║  HOW TO USE THIS FILE WITH COPILOT:                                         ║
+║  1. Open this file in VS Code                                                ║
+║  2. In Copilot Chat, type:                                                   ║
+║     "@workspace Use #file:krishi_saarthi_design_reference.html as my        ║
+║      design reference. Build [your component] in this exact style."         ║
+║  3. Or paste sections into Copilot inline chat with Ctrl+I                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+DESIGN PHILOSOPHY:
+  - Dark, intentional aesthetic (NOT generic green-on-white)
+  - Typography-first: Instrument Serif (display) + Syne (UI) + Inter (body)
+  - Cinematic spacing — generous whitespace, never cramped
+  - Subtle motion — breathing glows, scan animations, staggered fade-ups
+  - Custom cursor with lagging ring (premium UX signature)
+  - Every section separated by a gradient rule, never a hard border
+  - Feature cards use 1px grid dividers, not individual card shadows
+  - Color palette: #060a06 base, #7fff6a accent, #f0f4ee text
+
+COLOR TOKENS (copy these into any new file):
+  --bg-base:       #060a06   (near-black background)
+  --bg-surface:    rgba(255,255,255,0.03)  (card surfaces)
+  --bg-hover:      rgba(127,255,106,0.025) (card hover state)
+  --accent:        #7fff6a   (primary green accent)
+  --accent-dim:    #3d8b37   (deeper green for gradients)
+  --accent-glow:   rgba(127,255,106,0.12) (glow backgrounds)
+  --text-primary:  #f0f4ee   (headings, key text)
+  --text-muted:    rgba(240,244,238,0.45) (body copy)
+  --text-dim:      rgba(240,244,238,0.25) (hints, labels)
+  --border:        rgba(255,255,255,0.07)  (default borders)
+  --border-accent: rgba(127,255,106,0.25) (green-tinted borders)
+  --divider:       linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)
+
+TYPOGRAPHY SCALE:
+  Display (hero h1):  Instrument Serif, 70px, weight 400, italic for emphasis
+  Section title (h2): Instrument Serif, 48px, weight 400, letter-spacing -0.5px
+  UI heading (h3):    Syne, 18px, weight 700
+  Nav / labels:       Syne, 10-13px, weight 600-800
+  Body copy:          Inter, 14-15px, weight 300, line-height 1.8
+  Eyebrow labels:     Syne, 10px, weight 700, letter-spacing 2.5px, UPPERCASE
+  Stat numbers:       Instrument Serif, 44px
+
+SPACING SYSTEM:
+  Page padding:  48px horizontal (desktop)
+  Section gap:   80px vertical between sections
+  Card padding:  36px 32px
+  Gap in grids:  1px (using background color trick, not gap property)
+  Border radius: 20-24px for cards, 100px for pills/buttons
+
+ANIMATION TOKENS:
+  Fade-up:     opacity 0→1, translateY 28px→0, duration 0.55s, ease
+  Stagger:     0.07s delay per item
+  Breathe:     scale 1→1.12, 6s ease-in-out infinite
+  Scan beam:   top 0→100%, 2.5s ease-in-out infinite
+  Ticker:      translateX 0→-50%, 25s linear infinite
+  Cursor ring: lerp to mouse at 12% speed per frame
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Krishi Saarthi — Design Reference</title>
+
+<!--
+  ┌─────────────────────────────────────────────────────────┐
+  │  FONT IMPORTS — Always use these three, in this order   │
+  │  Instrument Serif = editorial display (hero titles)     │
+  │  Syne = geometric UI sans (nav, labels, buttons, tags)  │
+  │  Inter = humanist body (paragraphs, descriptions)       │
+  └─────────────────────────────────────────────────────────┘
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #060a06;   /* --bg-base */
+  color: #f0f4ee;        /* --text-primary */
+  overflow-x: hidden;
+  cursor: none;          /* Hide default cursor — custom one below */
+}
+
+/* ============================================================
+   CUSTOM CURSOR
+   Copilot prompt: "Add the same lagging cursor ring from the reference"
+   ============================================================ */
+.cursor {
+  position: fixed;
+  width: 10px; height: 10px;
+  background: #7fff6a;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.15s ease;
+  mix-blend-mode: difference; /* Makes it invert on light elements */
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(127,255,106,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  /* JS lerps this to mouse position at 12% speed — creates the lag */
+}
+
+/* ============================================================
+   NAVIGATION
+   - Glassmorphism via backdrop-filter (NOT a colored bg)
+   - Logo uses Syne 800 weight
+   - Links use Syne 500, muted color, hover to white
+   - CTA button: solid #7fff6a, dark text, pill shape
+   ============================================================ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 48px;
+}
+nav::before {
+  /* Glass effect lives in pseudo-element so it doesn't affect children */
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(6,10,6,0.6);
+  backdrop-filter: blur(24px);
+  border-bottom: 0.5px solid rgba(255,255,255,0.05);
+  z-index: -1;
+}
+.nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px; font-weight: 800;
+  color: #f0f4ee;
+  letter-spacing: -0.3px;
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-mark {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, #3d8b37, #7fff6a);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+}
+.nav-links { display: flex; gap: 36px; }
+.nav-link {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 500;
+  color: rgba(240,244,238,0.45);
+  letter-spacing: 0.3px;
+  cursor: pointer; text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-link:hover { color: #f0f4ee; }
+.nav-cta-btn {
+  padding: 8px 20px; border-radius: 24px;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
+  background: #7fff6a; color: #060a06;
+  border: none; cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-cta-btn:hover { background: #a8ff96; transform: scale(1.04); }
+
+/* ============================================================
+   HERO SECTION
+   - Split grid (1fr 1fr) — text left, visual right
+   - Background: grid lines + breathing glow orbs + grain
+   - H1 uses Instrument Serif, 70px, with <em> for italic green
+   - Trust row: stacked avatars + "X farmers" text
+   ============================================================ */
+.hero {
+  min-height: 100vh;
+  display: grid; grid-template-columns: 1fr 1fr;
+  align-items: center; gap: 60px;
+  padding: 0 48px; padding-top: 80px;
+  position: relative; overflow: hidden;
+}
+
+/* Background effects — all position:absolute, z-index:0 */
+.bg-grid {
+  position: absolute; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(127,255,106,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127,255,106,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.bg-glow {
+  position: absolute; z-index: 0;
+  width: 700px; height: 700px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(61,139,55,0.18) 0%, transparent 65%);
+  top: 50%; left: 55%; transform: translate(-50%,-50%);
+  animation: breathe 6s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,100% { transform: translate(-50%,-50%) scale(1); opacity: 0.8; }
+  50%      { transform: translate(-50%,-50%) scale(1.12); opacity: 1; }
+}
+
+/* Eyebrow row above H1 */
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 28px;
+}
+.eyebrow-line {
+  width: 28px; height: 1px;
+  background: linear-gradient(90deg, #7fff6a, transparent);
+}
+.eyebrow-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: rgba(127,255,106,0.8);
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #7fff6a;
+  animation: blink 1.5s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* THE HERO TITLE — Key pattern */
+h1.hero-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 70px; line-height: 0.98; font-weight: 400;
+  color: #f0f4ee;
+  margin-bottom: 24px;
+  letter-spacing: -1px;
+  position: relative; z-index: 2;
+}
+h1.hero-title em {
+  font-style: italic;
+  color: #7fff6a; /* Accent color for italic word */
+}
+/* Optional: outline text variant for contrast
+h1.hero-title .outline {
+  -webkit-text-stroke: 1px rgba(240,244,238,0.3);
+  color: transparent;
+}
+*/
+
+.hero-desc {
+  font-size: 15px; font-weight: 300; line-height: 1.8;
+  color: rgba(240,244,238,0.5);
+  max-width: 400px; margin-bottom: 36px;
+  position: relative; z-index: 2;
+}
+
+/* Button patterns */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; border-radius: 100px;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.2px;
+  background: #7fff6a; color: #060a06;
+  border: none; cursor: pointer;
+  transition: all 0.25s;
+}
+.btn-primary:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 40px rgba(127,255,106,0.4);
+}
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; border-radius: 100px;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 500;
+  background: transparent;
+  border: 0.5px solid rgba(240,244,238,0.2);
+  color: rgba(240,244,238,0.7);
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-secondary:hover {
+  border-color: rgba(240,244,238,0.5);
+  color: #f0f4ee;
+}
+
+/* Trust row */
+.hero-trust {
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 36px;
+}
+.trust-avatars { display: flex; }
+.trust-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid #060a06;
+  margin-left: -8px;
+  background: linear-gradient(135deg, #3d8b37, #7fff6a);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+}
+.trust-avatar:first-child { margin-left: 0; }
+.trust-text {
+  font-size: 12px; color: rgba(240,244,238,0.4);
+}
+.trust-text strong { color: rgba(240,244,238,0.8); font-weight: 500; }
+
+/* ============================================================
+   HERO VISUAL CARD (right side)
+   - Glass card with border, no hard shadow
+   - Scan animation inside
+   - Floating badges positioned absolutely
+   ============================================================ */
+.hero-visual { position: relative; z-index: 2; }
+.hero-card {
+  width: 320px; margin: 0 auto;
+  background: rgba(255,255,255,0.03);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: 24px; padding: 24px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+}
+
+/* Scan viewport — animated AI scanning effect */
+.scan-viewport {
+  width: 100%; height: 160px; border-radius: 16px;
+  background: linear-gradient(135deg, rgba(61,139,55,0.08), rgba(127,255,106,0.04));
+  border: 0.5px solid rgba(127,255,106,0.15);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+}
+.scan-beam {
+  position: absolute; left: 0; right: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, #7fff6a, transparent);
+  animation: scanBeam 2.5s ease-in-out infinite;
+  opacity: 0.8;
+}
+@keyframes scanBeam { 0%{top:0} 100%{top:calc(100% - 2px)} }
+
+/* Pulse rings behind scan target */
+.scan-pulse {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(127,255,106,0.15);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  animation: scanPulse 2s ease-in-out infinite;
+}
+@keyframes scanPulse {
+  0%,100% { transform: translate(-50%,-50%) scale(0.9); opacity: 0.5; }
+  50%      { transform: translate(-50%,-50%) scale(1.05); opacity: 1; }
+}
+
+/* Corner bracket target */
+.scan-target { width: 80px; height: 80px; position: relative; }
+.scan-target::before,
+.scan-target::after {
+  content: ''; position: absolute;
+  width: 16px; height: 16px;
+  border-color: #7fff6a; border-style: solid;
+}
+.scan-target::before { top:0; left:0; border-width:2px 0 0 2px; border-radius:4px 0 0 0; }
+.scan-target::after  { bottom:0; right:0; border-width:0 2px 2px 0; border-radius:0 0 4px 0; }
+
+/* Result bar below scan */
+.scan-result {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: rgba(127,255,106,0.08);
+  border: 0.5px solid rgba(127,255,106,0.2);
+  border-radius: 12px; margin-bottom: 14px;
+}
+.scan-result-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 500; color: #7fff6a; flex: 1;
+}
+.scan-result-conf { font-size: 11px; color: rgba(127,255,106,0.6); }
+
+/* Metric grid inside card */
+.card-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.card-metric {
+  background: rgba(255,255,255,0.03);
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 12px;
+}
+.metric-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 700; color: #f0f4ee; margin-bottom: 2px;
+}
+.metric-lbl {
+  font-size: 10px; color: rgba(240,244,238,0.35);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* Floating badge pattern */
+.float-badge {
+  position: absolute;
+  background: rgba(10,16,10,0.85);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: 14px; padding: 10px 14px;
+  backdrop-filter: blur(20px);
+  white-space: nowrap;
+  animation: floatBob 4s ease-in-out infinite;
+}
+@keyframes floatBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.float-badge-label {
+  font-size: 10px; font-family: 'Syne', sans-serif; font-weight: 600;
+  color: rgba(240,244,238,0.4); margin-bottom: 3px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.float-badge-value {
+  font-size: 13px; font-weight: 600; color: #f0f4ee;
+  display: flex; align-items: center; gap: 5px;
+}
+
+/* ============================================================
+   TICKER BAR
+   - Full width, subtle green tint
+   - Left badge is solid #7fff6a with dark text
+   - Track animates at translateX -50% (duplicate content for loop)
+   ============================================================ */
+.ticker-wrap {
+  background: rgba(127,255,106,0.04);
+  border-top: 0.5px solid rgba(127,255,106,0.1);
+  border-bottom: 0.5px solid rgba(127,255,106,0.1);
+  padding: 12px 0; overflow: hidden; position: relative;
+}
+.ticker-label {
+  position: absolute; left: 0; top: 0; bottom: 0; z-index: 3;
+  background: #7fff6a; /* Solid accent color — stands out */
+  padding: 0 20px;
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
+  color: #060a06; text-transform: uppercase;
+}
+.ticker-track {
+  display: flex; width: max-content;
+  animation: tickerScroll 25s linear infinite;
+  padding-left: 120px; /* Space for the label badge */
+}
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); } /* Content duplicated = seamless loop */
+}
+.ticker-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 30px;
+  border-right: 0.5px solid rgba(255,255,255,0.06);
+  font-size: 12px;
+}
+.ticker-crop { color: rgba(240,244,238,0.6); font-family: 'Syne', sans-serif; font-weight: 500; }
+.ticker-price { color: #f0f4ee; font-weight: 600; font-family: 'Syne', sans-serif; }
+.ticker-up   { color: #7fff6a; font-size: 10px; font-weight: 700; }
+.ticker-down { color: #ff8f8f; font-size: 10px; font-weight: 700; }
+
+/* ============================================================
+   SECTION DIVIDERS
+   Used between every major section
+   ============================================================ */
+.section-divider {
+  height: 0.5px; margin: 0 48px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+}
+
+/* ============================================================
+   SECTION HEADER PATTERN (eyebrow + title + subtitle)
+   Used for every content section
+   ============================================================ */
+.sec-eyebrow {
+  font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: rgba(127,255,106,0.7);
+  text-align: center; margin-bottom: 14px;
+}
+h2.sec-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 48px; font-weight: 400; line-height: 1.1;
+  color: #f0f4ee; letter-spacing: -0.5px;
+  text-align: center; margin-bottom: 12px;
+}
+h2.sec-title em { font-style: italic; color: #7fff6a; }
+.sec-sub {
+  font-size: 14px; color: rgba(240,244,238,0.4);
+  text-align: center; font-weight: 300; line-height: 1.7;
+  max-width: 420px; margin: 0 auto;
+}
+
+/* ============================================================
+   HOW IT WORKS — 3 STEP GRID
+   Key pattern: grid with 1px dividers (not individual cards)
+   ============================================================ */
+.steps-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px;                                   /* ← the 1px divider trick */
+  background: rgba(255,255,255,0.06);          /* ← becomes the divider color */
+  border-radius: 20px; overflow: hidden;       /* ← rounds the whole grid */
+  border: 0.5px solid rgba(255,255,255,0.06);
+  margin-top: 48px;
+}
+.step-card {
+  background: #060a06;   /* Fills over the grid bg, leaving 1px gaps */
+  padding: 36px 32px; position: relative;
+  transition: background 0.3s;
+}
+.step-card:hover { background: rgba(127,255,106,0.03); }
+.step-number {
+  font-family: 'Instrument Serif', serif;
+  font-size: 60px; font-weight: 400;
+  color: rgba(255,255,255,0.04); /* Ghost number — decorative */
+  position: absolute; top: 20px; right: 24px; line-height: 1;
+}
+.step-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(127,255,106,0.08);
+  border: 0.5px solid rgba(127,255,106,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 20px;
+}
+.step-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px; font-weight: 700; color: #f0f4ee; margin-bottom: 10px;
+}
+.step-desc {
+  font-size: 13px; color: rgba(240,244,238,0.4);
+  line-height: 1.7; font-weight: 300;
+}
+
+/* ============================================================
+   FEATURES GRID — Same 1px divider pattern as steps
+   Cards can span 2 columns with .span2 class
+   ============================================================ */
+.features-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 20px; overflow: hidden;
+  border: 0.5px solid rgba(255,255,255,0.06);
+}
+.feat-card {
+  background: #060a06;
+  padding: 36px 32px;
+  position: relative; overflow: hidden;
+  transition: background 0.3s;
+}
+.feat-card:hover { background: rgba(127,255,106,0.025); }
+/* Bottom glow line on hover */
+.feat-card::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(127,255,106,0.2), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.feat-card:hover::after { opacity: 1; }
+.feat-card.span2 { grid-column: span 2; }
+
+/* Ghost number decorative */
+.feat-ghost-num {
+  font-family: 'Instrument Serif', serif;
+  font-size: 56px; font-weight: 400;
+  color: rgba(255,255,255,0.03);
+  position: absolute; top: 16px; right: 20px; line-height: 1;
+}
+/* Feature tag pills */
+.feat-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.tag-ai    { background:rgba(255,100,100,0.1); border:0.5px solid rgba(255,100,100,0.2); color:#ff8f8f; }
+.tag-live  { background:rgba(127,255,106,0.1); border:0.5px solid rgba(127,255,106,0.25); color:#7fff6a; }
+.tag-new   { background:rgba(255,198,0,0.1);   border:0.5px solid rgba(255,198,0,0.2);    color:#ffd700; }
+.tag-soon  { background:rgba(138,100,255,0.1); border:0.5px solid rgba(138,100,255,0.2);  color:#b39dff; }
+.tag-local { background:rgba(0,200,255,0.1);   border:0.5px solid rgba(0,200,255,0.2);    color:#7dd9ff; }
+
+.feat-icon { font-size: 32px; margin-bottom: 16px; display: block; }
+.feat-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 700; color: #f0f4ee; margin-bottom: 10px;
+}
+.feat-desc {
+  font-size: 13px; color: rgba(240,244,238,0.4);
+  line-height: 1.75; font-weight: 300;
+}
+/* Demo area inside each feature card */
+.feat-demo {
+  margin-top: 24px; padding: 20px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 14px; border: 0.5px solid rgba(255,255,255,0.05);
+}
+
+/* ============================================================
+   STAT CARDS (used in About/Why section)
+   ============================================================ */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.stat-card {
+  padding: 24px;
+  background: rgba(255,255,255,0.02);
+  border: 0.5px solid rgba(255,255,255,0.07);
+  border-radius: 18px;
+}
+.stat-number {
+  font-family: 'Instrument Serif', serif;
+  font-size: 44px; color: #7fff6a; line-height: 1;
+}
+.stat-label {
+  font-size: 11px; color: rgba(240,244,238,0.4);
+  margin-top: 6px; font-weight: 300; line-height: 1.5;
+}
+
+/* ============================================================
+   TESTIMONIAL CARDS
+   ============================================================ */
+.testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.testi-card {
+  background: rgba(255,255,255,0.02);
+  border: 0.5px solid rgba(255,255,255,0.07);
+  border-radius: 20px; padding: 28px;
+  transition: border-color 0.3s;
+}
+.testi-card:hover { border-color: rgba(127,255,106,0.2); }
+.testi-stars { font-size: 12px; color: #7fff6a; letter-spacing: 3px; margin-bottom: 14px; }
+.testi-quote {
+  font-family: 'Instrument Serif', serif;
+  font-size: 14px; font-style: italic;
+  color: rgba(240,244,238,0.55); line-height: 1.8;
+  margin-bottom: 20px;
+}
+.testi-author { display: flex; align-items: center; gap: 10px; }
+.testi-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #3d8b37, #7fff6a);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.testi-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: rgba(240,244,238,0.8); }
+.testi-loc  { font-size: 11px; color: rgba(240,244,238,0.3); }
+
+/* ============================================================
+   CTA BANNER (full-width call to action near footer)
+   ============================================================ */
+.cta-banner {
+  margin: 0 48px 80px;
+  background: rgba(127,255,106,0.06);
+  border: 0.5px solid rgba(127,255,106,0.15);
+  border-radius: 24px; padding: 60px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.cta-banner::before {
+  /* Glow orb in centre */
+  content: '';
+  position: absolute; width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(127,255,106,0.1) 0%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+}
+.cta-tag {
+  font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2.5px; color: #7fff6a; text-transform: uppercase;
+  margin-bottom: 16px; position: relative; z-index: 1;
+}
+.cta-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 48px; font-weight: 400; color: #f0f4ee;
+  letter-spacing: -0.5px; margin-bottom: 12px;
+  position: relative; z-index: 1;
+}
+.cta-sub {
+  font-size: 14px; color: rgba(240,244,238,0.45);
+  margin-bottom: 32px; font-weight: 300;
+  position: relative; z-index: 1;
+}
+
+/* ============================================================
+   SCROLL ANIMATIONS
+   Apply these classes via JS IntersectionObserver
+   ============================================================ */
+/* Initial state (set via JS) */
+/* el.style.opacity = '0'
+   el.style.transform = 'translateY(28px)'
+   el.style.transition = 'opacity 0.55s ease Xs, transform 0.55s ease Xs'
+   where X = index * 0.07 for stagger */
+/* When intersecting: opacity = '1', transform = 'translateY(0)' */
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  border-top: 0.5px solid rgba(255,255,255,0.06);
+  padding: 28px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 800;
+  color: rgba(240,244,238,0.5);
+  display: flex; align-items: center; gap: 8px;
+}
+.footer-copy { font-size: 11px; color: rgba(240,244,238,0.2); font-family: 'Syne', sans-serif; }
+.footer-link {
+  font-size: 11px; color: rgba(240,244,238,0.3);
+  font-family: 'Syne', sans-serif; cursor: pointer;
+  transition: color 0.2s;
+}
+.footer-link:hover { color: rgba(240,244,238,0.7); }
+
+/* ============================================================
+   UTILITY ANIMATIONS (reference all animations used)
+   ============================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes floatBobAlt {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-10px); }
+}
+@keyframes rotateSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     CUSTOM CURSOR — paste this block at top of any page body
+     ============================================================ -->
+<div class="cursor" id="cursor-dot"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- ============================================================
+     NAVIGATION
+     ============================================================ -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-mark">🌾</div>
+    Krishi Saarthi
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="#hero">Home</a>
+    <a class="nav-link" href="#how">Process</a>
+    <a class="nav-link" href="#features">Features</a>
+    <a class="nav-link" href="#stories">Stories</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div style="background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);border-radius:20px;padding:6px 14px;font-size:11px;font-family:'Syne',sans-serif;font-weight:600;color:rgba(240,244,238,0.6);">ਪੰਜਾਬੀ ▾</div>
+    <button class="nav-cta-btn">Get Started →</button>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero" id="hero">
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <!-- LEFT: Text -->
+  <div style="position:relative;z-index:2;">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-line"></div>
+      <div class="eyebrow-text">AI-Powered Agricultural Assistant</div>
+      <div class="live-dot"></div>
+    </div>
+
+    <h1 class="hero-title">
+      Smart<br>Farming<br>for <em>Bharat</em>
+    </h1>
+
+    <p class="hero-desc">
+      Detect diseases, track mandi prices, plan crops and check weather — all in one app, in your language, built for the Indian farmer.
+    </p>
+
+    <div style="display:flex;gap:12px;align-items:center;">
+      <button class="btn-primary">📷 Scan Your Crop →</button>
+      <button class="btn-secondary">How it works</button>
+    </div>
+
+    <div class="hero-trust" style="margin-top:36px;">
+      <div class="trust-avatars">
+        <div class="trust-avatar">👨‍🌾</div>
+        <div class="trust-avatar">👩‍🌾</div>
+        <div class="trust-avatar">👨‍🌾</div>
+        <div class="trust-avatar">👩‍🌾</div>
+      </div>
+      <div class="trust-text">Trusted by <strong>50,000+</strong> farmers across India</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Floating card visual -->
+  <div class="hero-visual" style="position:relative;z-index:2;display:flex;align-items:center;justify-content:center;">
+
+    <!-- Floating badge top-right -->
+    <div class="float-badge" style="top:-20px;right:-30px;animation-delay:0s;">
+      <div class="float-badge-label">Wheat · Amritsar Mandi</div>
+      <div class="float-badge-value">₹2,180/qtl <span style="color:#7fff6a;font-size:10px;">▲ 1.2%</span></div>
+    </div>
+
+    <div class="hero-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:rgba(240,244,238,0.8);">Disease Scanner</div>
+        <div style="padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:'Syne',sans-serif;background:rgba(127,255,106,0.12);border:0.5px solid rgba(127,255,106,0.3);color:#7fff6a;">AI · Live</div>
+      </div>
+
+      <div class="scan-viewport">
+        <!-- Pulse rings -->
+        <div class="scan-pulse" style="width:120px;height:120px;"></div>
+        <div class="scan-pulse" style="width:160px;height:160px;animation-delay:0.5s;border-color:rgba(127,255,106,0.07);"></div>
+        <!-- Scanning beam -->
+        <div class="scan-beam"></div>
+        <!-- Target brackets -->
+        <div class="scan-target">
+          <div style="position:absolute;top:0;right:0;width:16px;height:16px;border-top:2px solid #7fff6a;border-right:2px solid #7fff6a;border-radius:0 4px 0 0;"></div>
+          <div style="position:absolute;bottom:0;left:0;width:16px;height:16px;border-bottom:2px solid #7fff6a;border-left:2px solid #7fff6a;border-radius:0 0 0 4px;"></div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:32px;">🌾</div>
+        </div>
+      </div>
+
+      <div class="scan-result">
+        <span>✅</span>
+        <div class="scan-result-text">Wheat — Healthy</div>
+        <div class="scan-result-conf">99.2% confidence</div>
+      </div>
+
+      <div class="card-metrics">
+        <div class="card-metric">
+          <div class="metric-val">200+</div>
+          <div class="metric-lbl">Diseases</div>
+        </div>
+        <div class="card-metric">
+          <div class="metric-val">6</div>
+          <div class="metric-lbl">Languages</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating badge bottom-left -->
+    <div class="float-badge" style="bottom:30px;left:-50px;animation-delay:1s;">
+      <div class="float-badge-label">Weather · Amritsar</div>
+      <div class="float-badge-value">☀️ 20°C &nbsp;<span style="color:rgba(240,244,238,0.4);font-size:11px;">No rain this week</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     LIVE TICKER
+     NOTE: Duplicate all items for seamless loop!
+     ============================================================ -->
+<div class="ticker-wrap">
+  <div class="ticker-label">
+    <div style="width:5px;height:5px;border-radius:50%;background:#060a06;animation:blink 1.2s ease-in-out infinite;"></div>
+    Live Prices
+  </div>
+  <div class="ticker-track">
+    <!-- Original items -->
+    <div class="ticker-item"><span class="ticker-crop">🌾 Wheat</span><span class="ticker-price">₹2,180/qtl</span><span class="ticker-up">▲1.2%</span></div>
+    <div class="ticker-item"><span class="ticker-crop">🌾 Paddy</span><span class="ticker-price">₹2,050/qtl</span><span class="ticker-up">▲0.8%</span></div>
+    <div class="ticker-item"><span class="ticker-crop">🧅 Onion</span><span class="ticker-price">₹1,840/qtl</span><span class="ticker-down">▼0.5%</span></div>
+    <div class="ticker-item"><span class="ticker-crop">🍅 Tomato</span><span class="ticker-price">₹1,200/qtl</span><span class="ticker-up">→0.0%</span></div>
+    <div class="ticker-item"><span class="ticker-crop">🌿 Cotton</span><span class="ticker-price">₹6,700/qtl</span><span class="ticker-up">▲2.1%</span></div>
+    <div class="ticker-item"><span class="ticker-crop">🌽 Maize</span><span class="ticker-price">₹1,950/qtl</span><span class="ticker-up">▲0.4%</span></div>
+    <!-- DUPLICATE for seamless loop -->
+    <div class="ticker-item"><span class="ticker-crop">🌾 Wheat</span><span class="ticker-price">₹2,180/qtl</span><span class="ticker-up">▲1.2%</span></div>
+    <div class="ticker-item"><span class="ticker-crop">🌾 Paddy</span><span class="ticker-price">₹2,050/qtl</span><span class="ticker-up">▲0.8%</span></div>
+    <div class="ticker-item"><span class="ticker-crop">🧅 Onion</span><span class="ticker-price">₹1,840/qtl</span><span class="ticker-down">▼0.5%</span></div>
+    <div class="ticker-item"><span class="ticker-crop">🍅 Tomato</span><span class="ticker-price">₹1,200/qtl</span><span class="ticker-up">→0.0%</span></div>
+    <div class="ticker-item"><span class="ticker-crop">🌿 Cotton</span><span class="ticker-price">₹6,700/qtl</span><span class="ticker-up">▲2.1%</span></div>
+    <div class="ticker-item"><span class="ticker-crop">🌽 Maize</span><span class="ticker-price">₹1,950/qtl</span><span class="ticker-up">▲0.4%</span></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     HOW IT WORKS
+     ============================================================ -->
+<section style="padding:80px 48px;" id="how">
+  <div class="sec-eyebrow">Simple Process</div>
+  <h2 class="sec-title">Three steps to smarter farming</h2>
+  <p class="sec-sub">No complicated setup. Open, choose your language, and start using powerful AI tools instantly.</p>
+
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-number">01</div>
+      <div class="step-icon">🌐</div>
+      <div class="step-title">Choose Your Language</div>
+      <div class="step-desc">Select from Punjabi, Hindi, English and 3 more. Everything works in your own tongue.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-number">02</div>
+      <div class="step-icon">📱</div>
+      <div class="step-title">Use Any Feature</div>
+      <div class="step-desc">Scan a leaf, check mandi rates, view 7-day weather, or consult your crop calendar.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-number">03</div>
+      <div class="step-icon">✅</div>
+      <div class="step-title">Farm with Confidence</div>
+      <div class="step-desc">AI-backed insights — which pesticide, when to sow, when to sell. No guesswork.</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ============================================================
+     FEATURES GRID
+     ============================================================ -->
+<section style="padding:80px 48px;" id="features">
+  <div class="sec-eyebrow">Full Feature Suite</div>
+  <h2 class="sec-title">Six tools. One <em>powerful</em> app.</h2>
+  <p class="sec-sub">Everything a modern Indian farmer needs — packed into a single fast app.</p>
+
+  <div class="features-grid" style="margin-top:48px;">
+    <div class="feat-card">
+      <div class="feat-ghost-num">01</div>
+      <div class="feat-tag tag-ai">● AI Powered</div>
+      <span class="feat-icon">🔬</span>
+      <div class="feat-title">Disease & Pest Detection</div>
+      <p class="feat-desc">Point your camera at any leaf. AI detects 200+ diseases in seconds with treatment plans.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ghost-num">02</div>
+      <div class="feat-tag tag-live">● Live Data</div>
+      <span class="feat-icon">📈</span>
+      <div class="feat-title">Market Prices</div>
+      <p class="feat-desc">Real-time mandi rates from 12+ states. Search any crop or mandi instantly.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ghost-num">03</div>
+      <div class="feat-tag tag-local">● Local</div>
+      <span class="feat-icon">☀️</span>
+      <div class="feat-title">Weather Forecast</div>
+      <p class="feat-desc">Village-level 7-day weather. Know rain and humidity before you spray or harvest.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ghost-num">04</div>
+      <div class="feat-tag tag-live">● Interactive</div>
+      <span class="feat-icon">📅</span>
+      <div class="feat-title">Crop Calendar</div>
+      <p class="feat-desc">Month-by-month guidance for sowing, irrigation, fertilizing, and harvesting.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ghost-num">05</div>
+      <div class="feat-tag tag-new">● New</div>
+      <span class="feat-icon">🌱</span>
+      <div class="feat-title">Soil Report Analysis</div>
+      <p class="feat-desc">Scan your soil health card — AI reads NPK & pH and recommends the best crop.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ghost-num">06</div>
+      <div class="feat-tag tag-soon">● Coming Soon</div>
+      <span class="feat-icon">🏪</span>
+      <div class="feat-title">Vendor Verse</div>
+      <p class="feat-desc">Find trusted local seed sellers, dealers and service providers nearby.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ============================================================
+     TESTIMONIALS
+     ============================================================ -->
+<section style="padding:80px 48px;" id="stories">
+  <div class="sec-eyebrow">Farmer Stories</div>
+  <h2 class="sec-title">Voices from the field</h2>
+  <p class="sec-sub">Real farmers, real results — across Punjab and beyond.</p>
+
+  <div class="testi-grid" style="margin-top:48px;">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Pehli baar mere phone ne bataya ki meri wheat mein blight lag gayi hai. Seedha ilaaj bhi diya."</div>
+      <div class="testi-author">
+        <div class="testi-avatar">👨‍🌾</div>
+        <div><div class="testi-name">Gurpreet Singh</div><div class="testi-loc">Amritsar, Punjab</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Mandi bhav roz check karta hoon. Ab phone pe hi sab pata chal jaata hai — dalal ki zaroorat nahi."</div>
+      <div class="testi-author">
+        <div class="testi-avatar">👨‍🌾</div>
+        <div><div class="testi-name">Ranjit Yadav</div><div class="testi-loc">Ludhiana, Punjab</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Soil scan ne bataya nitrogen kam hai. Is baar yield 20% zyada aayi. Kamal ki app hai."</div>
+      <div class="testi-author">
+        <div class="testi-avatar">👩‍🌾</div>
+        <div><div class="testi-name">Sukhwinder Kaur</div><div class="testi-loc">Patiala, Punjab</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA BANNER
+     ============================================================ -->
+<div class="cta-banner">
+  <div class="cta-tag">Start Today — It's Free</div>
+  <div class="cta-title">Ready to farm smarter?</div>
+  <div class="cta-sub" style="position:relative;z-index:1;">Join 50,000+ farmers already using Krishi Saarthi to grow more, earn more, and worry less.</div>
+  <div style="display:flex;gap:12px;justify-content:center;position:relative;z-index:1;">
+    <button class="btn-primary">📷 Scan Your First Crop</button>
+    <button class="btn-secondary">Watch Demo →</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div class="footer-logo">
+    <div class="logo-mark" style="width:26px;height:26px;font-size:13px;">🌾</div>
+    Krishi Saarthi
+  </div>
+  <div class="footer-copy">© 2026 Krishi Saarthi · Built with ❤️ for India's Farmers</div>
+  <div style="display:flex;gap:24px;">
+    <span class="footer-link">Privacy</span>
+    <span class="footer-link">Contact</span>
+    <span class="footer-link">Feedback</span>
+  </div>
+</footer>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+/*
+  CUSTOM CURSOR
+  Copilot: "Use the same cursor setup as the reference file"
+*/
+const dot = document.getElementById('cursor-dot');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  dot.style.left = (mx - 5) + 'px';
+  dot.style.top  = (my - 5) + 'px';
+});
+(function animateRing() {
+  rx += (mx - rx) * 0.12; // Lerp at 12% — creates the lag
+  ry += (my - ry) * 0.12;
+  ring.style.left = (rx - 18) + 'px';
+  ring.style.top  = (ry - 18) + 'px';
+  requestAnimationFrame(animateRing);
+})();
+// Grow cursor on interactive elements
+document.querySelectorAll('button, a, .feat-card, .testi-card').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    dot.style.transform = 'scale(2.5)';
+    ring.style.transform = 'scale(1.5)';
+  });
+  el.addEventListener('mouseleave', () => {
+    dot.style.transform = 'scale(1)';
+    ring.style.transform = 'scale(1)';
+  });
+});
+
+/*
+  SCROLL ANIMATIONS (Intersection Observer)
+  Copilot: "Add the same staggered scroll fade-up from the reference"
+*/
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.feat-card, .testi-card, .step-card, .stat-card').forEach((el, i) => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(28px)';
+  el.style.transition = `opacity 0.55s ease ${i * 0.07}s, transform 0.55s ease ${i * 0.07}s`;
+  observer.observe(el);
+});
+</script>
+
+</body>
+</html>
