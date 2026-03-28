@@ -2422,7 +2422,7 @@ if (showFeatureHub) {
 
   const exploreSchemeLanguage =
     { en: "English", hi: "Hindi", pa: "Punjabi", ta: "Tamil" }[language] || "English";
-  const exploreStateLabel = (selectedState || "PUNJAB")
+  const exploreStateLabel = (mandiState || "PUNJAB")
     .replace(/-/g, " ")
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase());
