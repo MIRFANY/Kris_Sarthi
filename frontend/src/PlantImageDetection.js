@@ -16,7 +16,7 @@ const COLORS = {
   inputBorder: "#a5d6a7",
 };
 
-function PlantImageDetection({ userId, language = "English", onDetectionComplete }) {
+function PlantImageDetection({ userId, language = "en", onDetectionComplete }) {
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -55,23 +55,24 @@ function PlantImageDetection({ userId, language = "English", onDetectionComplete
     try {
       const formData = new FormData();
       formData.append("image", selectedImage);
-      formData.append("userId", userId);
-      formData.append("language", language);
+      formData.append("language", language || "en");
 
-      const response = await axios.post(
-        `${API_URL}/api/plant-detection/detect`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post(`${API_URL}/api/detect-disease`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-      if (response.data.success) {
-        setDetection(response.data.detection);
+      if (response.data.success && response.data.disease) {
+        setDetection({
+          ...response.data.disease,
+          localized: response.data.localized || null,
+        });
         if (onDetectionComplete) {
-          onDetectionComplete(response.data.detection);
+          onDetectionComplete({
+            ...response.data.disease,
+            localized: response.data.localized || null,
+          });
         }
       }
     } catch (err) {
@@ -109,8 +110,20 @@ function PlantImageDetection({ userId, language = "English", onDetectionComplete
         }}
       >
         <h2 style={{ color: COLORS.primaryDark, marginBottom: "20px", textAlign: "center" }}>
-          🌱 Plant & Fertilizer Detection
+          🌿 Crop Disease &amp; Pest Detection
         </h2>
+        <p
+          style={{
+            textAlign: "center",
+            color: COLORS.text,
+            fontSize: "14px",
+            marginTop: "-8px",
+            marginBottom: "24px",
+            opacity: 0.85,
+          }}
+        >
+          Upload a clear photo of a leaf or crop. Results use the Hugging Face plant disease model.
+        </p>
 
         {/* Image Upload Section */}
         <div style={{ marginBottom: "30px" }}>
@@ -190,7 +203,7 @@ function PlantImageDetection({ userId, language = "English", onDetectionComplete
                     if (!loading) e.currentTarget.style.background = COLORS.primary;
                   }}
                 >
-                  {loading ? "🔍 Analyzing..." : "🔍 Detect Plant & Analyze"}
+                  {loading ? "🔍 Analyzing..." : "🔍 Detect disease & pests"}
                 </button>
 
                 <button
@@ -236,7 +249,21 @@ function PlantImageDetection({ userId, language = "English", onDetectionComplete
               🎯 Detection Results
             </h3>
 
-            {/* Plant Info */}
+            {detection.localized?.summary && (
+              <div
+                style={{
+                  background: "#e8f5e9",
+                  padding: "15px",
+                  borderRadius: "8px",
+                  marginBottom: "15px",
+                  borderLeft: `4px solid ${COLORS.primary}`,
+                }}
+              >
+                <h4 style={{ color: COLORS.primaryDark, margin: "0 0 8px 0" }}>🌐 Summary (your language)</h4>
+                <p style={{ margin: 0, lineHeight: 1.6, color: COLORS.text }}>{detection.localized.summary}</p>
+              </div>
+            )}
+
             <div
               style={{
                 background: COLORS.inputBg,
@@ -244,94 +271,56 @@ function PlantImageDetection({ userId, language = "English", onDetectionComplete
                 borderRadius: "8px",
                 marginBottom: "15px",
                 marginTop: "15px",
+                borderLeft: `4px solid ${detection.isHealthy ? COLORS.primary : "#e65100"}`,
               }}
             >
-              <h4 style={{ color: COLORS.primary, margin: "0 0 10px 0" }}>🌿 Plant Detected</h4>
+              <h4 style={{ color: COLORS.primaryDark, margin: "0 0 10px 0" }}>⚕️ Top prediction</h4>
+              {detection.localized?.topCrop != null && detection.localized.topCrop !== "" && (
+                <p style={{ margin: "5px 0" }}>
+                  <strong>Crop / plant:</strong> {detection.localized.topCrop}
+                </p>
+              )}
+              {!detection.localized?.topCrop && detection.plant && (
+                <p style={{ margin: "5px 0" }}>
+                  <strong>Crop / plant:</strong> {detection.plant}
+                </p>
+              )}
               <p style={{ margin: "5px 0" }}>
-                <strong>Type:</strong> {detection.plant.name}
+                <strong>Condition:</strong>{" "}
+                {detection.localized?.topCondition || detection.diseaseName}
               </p>
               <p style={{ margin: "5px 0" }}>
-                <strong>Confidence:</strong> {detection.plant.confidence}%
-              </p>
-              <p style={{ margin: "5px 0", color: COLORS.text }}>
-                {detection.plant.description}
-              </p>
-            </div>
-
-            {/* Disease/Condition Info */}
-            <div
-              style={{
-                background: COLORS.inputBg,
-                padding: "15px",
-                borderRadius: "8px",
-                marginBottom: "15px",
-                borderLeft: `4px solid ${
-                  detection.disease.name === "Healthy" ? COLORS.primary : "#e65100"
-                }`,
-              }}
-            >
-              <h4 style={{ color: COLORS.primaryDark, margin: "0 0 10px 0" }}>⚕️ Health Status</h4>
-              <p style={{ margin: "5px 0" }}>
-                <strong>Condition:</strong> {detection.disease.name}
+                <strong>Model label:</strong>{" "}
+                <span style={{ fontSize: "13px", wordBreak: "break-word" }}>{detection.name}</span>
               </p>
               <p style={{ margin: "5px 0" }}>
-                <strong>Severity:</strong>{" "}
-                <span
+                <strong>Confidence:</strong> {detection.confidencePercent}%
+              </p>
+              <div
+                style={{
+                  marginTop: "10px",
+                  height: "8px",
+                  background: "#e0e0e0",
+                  borderRadius: "4px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
                   style={{
-                    background:
-                      detection.disease.severity === "mild"
-                        ? "#c8e6c9"
-                        : detection.disease.severity === "moderate"
-                        ? "#fff9c4"
-                        : "#ffcdd2",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
+                    width: `${Math.min(100, detection.confidencePercent)}%`,
+                    height: "100%",
+                    background: detection.isHealthy ? COLORS.primary : "#f57c00",
+                    transition: "width 0.3s ease",
                   }}
-                >
-                  {detection.disease.severity}
-                </span>
-              </p>
-              <p style={{ margin: "5px 0", color: COLORS.text }}>
-                {detection.disease.description}
-              </p>
-            </div>
-
-            {/* Fertilizer Recommendation */}
-            <div
-              style={{
-                background: COLORS.inputBg,
-                padding: "15px",
-                borderRadius: "8px",
-                marginBottom: "15px",
-              }}
-            >
-              <h4 style={{ color: COLORS.primary, margin: "0 0 10px 0" }}>🌾 Fertilizer Recommendation</h4>
-              <p style={{ margin: "5px 0" }}>
-                <strong>Type:</strong> {detection.fertilizer.primary}
-              </p>
-              <p style={{ margin: "5px 0" }}>
-                <strong>Quantity:</strong> {detection.fertilizer.quantity}
-              </p>
-              <p style={{ margin: "5px 0" }}>
-                <strong>Frequency:</strong> {detection.fertilizer.frequency}
-              </p>
-              <p style={{ margin: "5px 0", color: COLORS.text }}>
-                {detection.fertilizer.description}
-              </p>
-
-              {detection.budget && (
-                <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: `1px solid ${COLORS.border}` }}>
-                  <p style={{ margin: "5px 0" }}>
-                    <strong>💰 Estimated Cost:</strong> ₹{detection.budget.totalCost}
-                  </p>
-                  <p style={{ margin: "5px 0", fontSize: "12px", color: "#666" }}>
-                    ({detection.budget.quantity}kg @ ₹{detection.budget.costPerKg}/kg)
-                  </p>
-                </div>
+                />
+              </div>
+              {detection.isHealthy && (
+                <p style={{ margin: "10px 0 0 0", color: COLORS.primaryDark, fontWeight: 600 }}>
+                  This class suggests the plant looks healthy in the model&apos;s view — still verify in the field.
+                </p>
               )}
             </div>
 
-            {/* Predictions */}
             <div
               style={{
                 background: COLORS.inputBg,
@@ -340,55 +329,36 @@ function PlantImageDetection({ userId, language = "English", onDetectionComplete
                 marginBottom: "15px",
               }}
             >
-              <h4 style={{ color: COLORS.primaryDark, margin: "0 0 10px 0" }}>📊 Predictions</h4>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                <div>
-                  <p style={{ margin: "5px 0", fontSize: "12px", color: "#666" }}>Yield</p>
-                  <p style={{ margin: "0", fontWeight: "600", color: COLORS.primary }}>
-                    {detection.predictions.yieldPrediction}
-                  </p>
-                </div>
-                <div>
-                  <p style={{ margin: "5px 0", fontSize: "12px", color: "#666" }}>Water Needed</p>
-                  <p style={{ margin: "0", fontWeight: "600", color: COLORS.primary }}>
-                    {detection.predictions.waterNeeded}
-                  </p>
-                </div>
-                <div>
-                  <p style={{ margin: "5px 0", fontSize: "12px", color: "#666" }}>Days to Harvest</p>
-                  <p style={{ margin: "0", fontWeight: "600", color: COLORS.primary }}>
-                    {detection.predictions.bestHarvestTime}
-                  </p>
-                </div>
-                <div>
-                  <p style={{ margin: "5px 0", fontSize: "12px", color: "#666" }}>Soil Requirements</p>
-                  <p style={{ margin: "0", fontWeight: "600", color: COLORS.primary }}>
-                    {detection.predictions.soilRequirements}
-                  </p>
-                </div>
+              <h4 style={{ color: COLORS.primary, margin: "0 0 12px 0" }}>📋 All class scores</h4>
+              {detection.localized?.predictions?.length > 0 && (
+                <p style={{ fontSize: "12px", color: "#666", margin: "0 0 10px 0" }}>
+                  Labels below are translated for your language; percentages are from the model.
+                </p>
+              )}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {(detection.localized?.predictions?.length > 0
+                  ? detection.localized.predictions
+                  : detection.predictions
+                ).map((p, idx, arr) => (
+                  <div
+                    key={`${p.label}-${idx}`}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "12px",
+                      fontSize: "14px",
+                      borderBottom: idx < arr.length - 1 ? `1px solid ${COLORS.border}` : "none",
+                      paddingBottom: "8px",
+                    }}
+                  >
+                    <span style={{ color: COLORS.text, wordBreak: "break-word", flex: 1 }}>{p.label}</span>
+                    <span style={{ fontWeight: 600, color: COLORS.primaryDark, whiteSpace: "nowrap" }}>
+                      {p.confidencePercent}%
+                    </span>
+                  </div>
+                ))}
               </div>
-            </div>
-
-            {/* Detailed Analysis */}
-            <div
-              style={{
-                background: COLORS.inputBg,
-                padding: "15px",
-                borderRadius: "8px",
-                marginBottom: "15px",
-              }}
-            >
-              <h4 style={{ color: COLORS.primaryDark, margin: "0 0 10px 0" }}>📝 Detailed AI Analysis</h4>
-              <p
-                style={{
-                  margin: "0",
-                  color: COLORS.text,
-                  whiteSpace: "pre-wrap",
-                  lineHeight: "1.6",
-                }}
-              >
-                {detection.detailedAnalysis}
-              </p>
             </div>
           </div>
         )}
