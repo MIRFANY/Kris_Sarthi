@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import axios from "axios";
-import { load } from "cheerio";
 import { GoogleGenAI } from "@google/genai";
 import mongoose from "mongoose";
 import bcryptjs from "bcryptjs";
@@ -13,6 +12,8 @@ import PlantDetection from "./models/PlantDetection.js";
 import plantDetectionRouter from "./routes/plantDetection.js";
 import cropDiseaseRouter from "./routes/cropDisease.js";
 import Exa from "exa-js";
+import { getMandiRates } from "./services/mandiRatesService.js";
+import { searchMandiWebResults } from "./src/services/exaSearchService.js";
 
 //connect to MongoDB
 dotenv.config();
@@ -432,294 +433,95 @@ app.get("/api/market-prices", async (req, res) => {
   }
 });
 
-// Live Market Prices from KisanDeals - Scrapes real mandi prices
-app.get("/api/live-market-prices", async (req, res) => {
+// Mandi rates from Agmarknet (data.gov.in)
+// Use state=all and/or district=all (or omit) to skip those filters and query the full dataset (paginated).
+// exaFallback=false → Agmarknet only (for two-step UI). Omit or true → run Exa when Agmarknet returns no rows (offset 0 only).
+app.get("/api/mandi-rates", async (req, res) => {
   try {
-    const commodity = req.query.commodity || "ALL";
-    const state = req.query.state || "PUNJAB";
-    const mandi = req.query.mandi || "ALL";
-    
-    // State name mapping to KisanDeals format (full names with hyphens)
-    const stateMapping = {
-      'PUNJAB': 'PUNJAB',
-      'HARYANA': 'HARYANA',
-      'JAMMU': 'JAMMU-AND-KASHMIR',
-      'JAMMU-AND-KASHMIR': 'JAMMU-AND-KASHMIR',
-      'UTTAR-PRADESH': 'UTTAR-PRADESH',
-      'MADHYA-PRADESH': 'MADHYA-PRADESH',
-      'MAHARASHTRA': 'MAHARASHTRA',
-      'GUJARAT': 'GUJARAT',
-      'RAJASTHAN': 'RAJASTHAN',
-      'KARNATAKA': 'KARNATAKA',
-      'TAMIL-NADU': 'TAMIL-NADU',
-      'ANDHRA-PRADESH': 'ANDHRA-PRADESH',
-      'TELANGANA': 'TELANGANA',
-      'WEST-BENGAL': 'WEST-BENGAL',
-      'BIHAR': 'BIHAR',
-      'ODISHA': 'ODISHA',
-      'KERALA': 'KERALA',
-      'JHARKHAND': 'JHARKHAND',
-      'CHHATTISGARH': 'CHHATTISGARH',
-      'UTTARAKHAND': 'UTTARAKHAND',
-      'HIMACHAL-PRADESH': 'HIMACHAL-PRADESH',
-      'GOA': 'GOA',
-      'ASSAM': 'ASSAM',
-    };
-    
-    // Build KisanDeals URL using correct pattern: /mandiprices/{COMMODITY}/{STATE}/{MANDI}
-    const stateFormatted = stateMapping[state.toUpperCase().replace(/\s+/g, '-')] || state.toUpperCase().replace(/\s+/g, '-');
-    const commodityFormatted = commodity.toUpperCase().replace(/\s+/g, '-');
-    const mandiFormatted = mandi.toUpperCase().replace(/\s+/g, '-');
-    
-    // URL Pattern: https://www.kisandeals.com/mandiprices/POTATO/JAMMU-AND-KASHMIR/ALL
-    const url = `https://www.kisandeals.com/mandiprices/${commodityFormatted}/${stateFormatted}/${mandiFormatted}`;
-    
-    console.log("Fetching live prices from KisanDeals:", url);
-    
-    // Fetch the page with browser-like headers
-    const response = await axios.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9,hi;q=0.8',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Cache-Control': 'no-cache',
-        'Referer': 'https://www.kisandeals.com/mandiprices',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'same-origin',
-      },
-      timeout: 20000,
-      maxRedirects: 5,
+    const stateRaw = req.query.state;
+    const districtRaw = req.query.district;
+    const state =
+      stateRaw === undefined || stateRaw === null
+        ? "all"
+        : String(stateRaw).trim() || "all";
+    const district =
+      districtRaw === undefined || districtRaw === null
+        ? "all"
+        : String(districtRaw).trim() || "all";
+
+    const limitRaw = parseInt(req.query.limit, 10);
+    const offsetRaw = parseInt(req.query.offset, 10);
+    const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 100) : 50;
+    const offset = Number.isFinite(offsetRaw) && offsetRaw >= 0 ? offsetRaw : 0;
+
+    const commodity = req.query.commodity ? String(req.query.commodity).trim() : undefined;
+    const date = req.query.date ? String(req.query.date).trim() : undefined;
+
+    const exaFb = req.query.exaFallback;
+    const skipExa =
+      exaFb === "false" ||
+      exaFb === "0" ||
+      String(exaFb).toLowerCase() === "false";
+
+    const data = await getMandiRates({
+      state,
+      district,
+      commodity,
+      arrivalDate: date,
+      limit,
+      offset,
     });
-    
-    const $ = load(response.data);
-    const prices = [];
-    
-    // Method 1: Parse the summary table at top (quick commodity prices)
-    // Format: | Apple | ₹115.0 | ₹11500.0 |
-    $('table').each((tableIdx, table) => {
-      $(table).find('tr').each((i, row) => {
-        const cells = $(row).find('td');
-        if (cells.length >= 2) {
-          const commodityName = $(cells[0]).text().trim();
-          const priceText1 = $(cells[1]).text().trim();
-          const priceText2 = cells.length >= 3 ? $(cells[2]).text().trim() : "";
-          
-          // Extract numeric values
-          const price1 = parseFloat(priceText1.replace(/[^\d.]/g, '')) || 0;
-          const price2 = parseFloat(priceText2.replace(/[^\d.]/g, '')) || 0;
-          
-          if (commodityName && !commodityName.includes('Commodity') && (price1 || price2)) {
-            const modalPrice = price2 > price1 ? price2 : price1 * 100; // Convert to quintal if needed
-            
-            prices.push({
-              commodity: commodityName,
-              variety: commodityName,
-              state: stateFormatted.replace(/-/g, ' '),
-              district: '',
-              mandi: mandiFormatted !== 'ALL' ? mandiFormatted.replace(/-/g, ' ') : 'APMC Market',
-              minPrice: Math.round(modalPrice * 0.85),
-              modalPrice: Math.round(modalPrice),
-              maxPrice: Math.round(modalPrice * 1.15),
-              pricePerKg: price1,
-              unit: "quintal",
-              arrivalDate: new Date().toLocaleDateString('en-IN'),
-              source: "KisanDeals",
-              isLive: true,
-            });
-          }
-        }
+
+    const records = data.records || [];
+
+    if (records.length > 0) {
+      return res.json({
+        success: true,
+        agmarknetAvailable: true,
+        total: data.total,
+        count: data.count,
+        records,
       });
-    });
-    
-    // Method 2: Parse detailed cards using regex on raw HTML
-    // Pattern: Commodity X | Variety X | State Y | District Z | Mandi W | Min Price ₹ A | Modal Price ₹ B | Max Price ₹ C
-    const htmlText = response.data;
-    
-    // Look for structured data in various formats
-    const patterns = [
-      // Pattern 1: Pipe-separated format
-      /Commodity\s+([^|<]+?)(?:\s*\||\s*<)[^|]*?State\s+([^|<]+?)(?:\s*\||\s*<)[^|]*?District\s+([^|<]+?)(?:\s*\||\s*<)[^|]*?(?:Mandi|Market)[^|]*?([^|<]+?)(?:\s*\||\s*<)[^|]*?Min\s*Price[^₹]*?₹\s*([\d,]+)[^|]*?Modal\s*Price[^₹]*?₹\s*([\d,]+)[^|]*?Max\s*Price[^₹]*?₹\s*([\d,]+)/gi,
-      // Pattern 2: Alternative format
-      /commodity[:\s]+([^,|<\n]+)[^]*?state[:\s]+([^,|<\n]+)[^]*?district[:\s]+([^,|<\n]+)[^]*?(?:mandi|market)[:\s]+([^,|<\n]+)[^]*?min[^₹]*₹\s*([\d,]+)[^]*?modal[^₹]*₹\s*([\d,]+)[^]*?max[^₹]*₹\s*([\d,]+)/gi,
-    ];
-    
-    for (const pattern of patterns) {
-      let match;
-      while ((match = pattern.exec(htmlText)) !== null) {
-        const item = {
-          commodity: match[1].trim().replace(/<[^>]*>/g, ''),
-          variety: match[1].trim().replace(/<[^>]*>/g, ''),
-          state: match[2].trim().replace(/<[^>]*>/g, ''),
-          district: match[3].trim().replace(/<[^>]*>/g, ''),
-          mandi: match[4].trim().replace(/<[^>]*>/g, ''),
-          minPrice: parseInt(match[5].replace(/,/g, '')) || 0,
-          modalPrice: parseInt(match[6].replace(/,/g, '')) || 0,
-          maxPrice: parseInt(match[7].replace(/,/g, '')) || 0,
-          unit: "quintal",
-          arrivalDate: new Date().toLocaleDateString('en-IN'),
-          source: "KisanDeals",
-          isLive: true,
-        };
-        
-        if (item.modalPrice > 0) {
-          prices.push(item);
-        }
-      }
     }
-    
-    // Remove duplicates
-    const uniquePrices = [];
-    const seen = new Set();
-    for (const p of prices) {
-      const key = `${p.commodity.toLowerCase()}-${p.mandi.toLowerCase()}`;
-      if (!seen.has(key) && p.commodity.length > 1) {
-        seen.add(key);
-        // Add commodity icon
-        p.icon = getCommodityIcon(p.commodity);
-        uniquePrices.push(p);
-      }
+
+    if (skipExa || offset > 0) {
+      return res.json({
+        success: true,
+        agmarknetAvailable: false,
+        total: data.total,
+        count: 0,
+        records: [],
+      });
     }
-    
-    console.log(`Parsed ${uniquePrices.length} prices from KisanDeals`);
-    
-    res.json({
-      success: uniquePrices.length > 0,
-      source: "KisanDeals",
-      sourceUrl: url,
-      count: uniquePrices.length,
-      date: new Date().toISOString().split('T')[0],
-      lastUpdated: new Date().toISOString(),
-      state: stateFormatted,
-      data: uniquePrices,
-      message: uniquePrices.length > 0 
-        ? `Found ${uniquePrices.length} live prices` 
-        : "No prices found for this selection. Try a different state.",
-    });
-    
-  } catch (error) {
-    console.error("KisanDeals fetch error:", error.message);
-    
-    // Return fallback data so app still works
-    const fallbackData = getFallbackMarketData(req.query.state || "PUNJAB");
-    
-    res.json({
+
+    let webResults = [];
+    let webSearchError;
+    try {
+      webResults = await searchMandiWebResults({
+        commodity,
+        district: districtRaw !== undefined && districtRaw !== null ? String(districtRaw) : "",
+        state: stateRaw !== undefined && stateRaw !== null ? String(stateRaw) : "",
+      });
+    } catch (exaErr) {
+      console.error("Exa mandi fallback error:", exaErr.message);
+      webSearchError = "Could not fetch live results. Please try again.";
+    }
+
+    return res.json({
       success: true,
-      source: "Estimated (KisanDeals unavailable)",
-      sourceUrl: "",
-      count: fallbackData.length,
-      date: new Date().toISOString().split('T')[0],
-      lastUpdated: new Date().toISOString(),
-      data: fallbackData,
-      message: "Using estimated prices. Live data temporarily unavailable.",
-      error: error.message,
+      agmarknetAvailable: false,
+      message: "No data available on Agmarknet for this query.",
+      webResults,
+      ...(webSearchError ? { webSearchError } : {}),
+      total: data.total,
+      count: 0,
+      records: [],
     });
+  } catch (err) {
+    console.error("Mandi rates error:", err.message);
+    res.status(500).json({ error: err.message || "Failed to fetch mandi rates" });
   }
 });
-
-// Helper: Get commodity icon
-function getCommodityIcon(commodity) {
-  const icons = {
-    'wheat': '🌾', 'rice': '🍚', 'paddy': '🍚', 'maize': '🌽', 'corn': '🌽',
-    'cotton': '☁️', 'sugarcane': '🎋', 'potato': '🥔', 'onion': '🧅',
-    'tomato': '🍅', 'apple': '🍎', 'banana': '🍌', 'orange': '🍊',
-    'mango': '🥭', 'grape': '🍇', 'pomegranate': '🍎', 'guava': '🍐',
-    'mustard': '💛', 'groundnut': '🥜', 'soybean': '🫘', 'chana': '🫘',
-    'gram': '🫘', 'tur': '🫛', 'moong': '🫛', 'urad': '🫛',
-    'cabbage': '🥬', 'cauliflower': '🥦', 'carrot': '🥕', 'brinjal': '🍆',
-    'bhindi': '🥒', 'capsicum': '🫑', 'chilli': '🌶️', 'garlic': '🧄',
-    'ginger': '🫚', 'lemon': '🍋', 'papaya': '🍈', 'watermelon': '🍉',
-    'egg': '🥚', 'milk': '🥛', 'curd': '🥛', 'ghee': '🧈',
-  };
-  
-  const lower = commodity.toLowerCase();
-  for (const [key, icon] of Object.entries(icons)) {
-    if (lower.includes(key)) return icon;
-  }
-  return '🌱';
-}
-
-// Helper: Fallback market data when scraping fails
-function getFallbackMarketData(state) {
-  const baseData = [
-    { commodity: "Wheat", icon: "🌾", basePrice: 2275, msp: 2275 },
-    { commodity: "Rice (Paddy)", icon: "🍚", basePrice: 2183, msp: 2183 },
-    { commodity: "Maize", icon: "🌽", basePrice: 2090, msp: 2090 },
-    { commodity: "Cotton", icon: "☁️", basePrice: 6620, msp: 6620 },
-    { commodity: "Mustard", icon: "💛", basePrice: 5650, msp: 5650 },
-    { commodity: "Potato", icon: "🥔", basePrice: 1200, msp: null },
-    { commodity: "Onion", icon: "🧅", basePrice: 1800, msp: null },
-    { commodity: "Tomato", icon: "🍅", basePrice: 2500, msp: null },
-    { commodity: "Sugarcane", icon: "🎋", basePrice: 315, msp: 315 },
-    { commodity: "Groundnut", icon: "🥜", basePrice: 6377, msp: 6377 },
-  ];
-  
-  const dayVariation = (new Date().getDate() % 10 - 5) / 100;
-  
-  return baseData.map(item => ({
-    ...item,
-    variety: item.commodity,
-    state: state.replace(/-/g, ' '),
-    district: "",
-    mandi: "State Market",
-    minPrice: Math.round(item.basePrice * (0.9 + dayVariation)),
-    modalPrice: Math.round(item.basePrice * (1 + dayVariation)),
-    maxPrice: Math.round(item.basePrice * (1.1 + dayVariation)),
-    unit: "quintal",
-    arrivalDate: new Date().toLocaleDateString('en-IN'),
-    source: "Estimated",
-    isLive: false,
-  }));
-}
-
-// Quick reference endpoint for KisanDeals direct links
-app.get("/api/kisandeals-links", (req, res) => {
-  const stateDistricts = {
-    "PUNJAB": ["LUDHIANA", "AMRITSAR", "JALANDHAR", "BATHINDA", "PATIALA", "MOGA", "FEROZEPUR"],
-    "HARYANA": ["KARNAL", "HISAR", "SIRSA", "AMBALA", "SONIPAT", "PANIPAT", "ROHTAK"],
-    "JAMMU": ["JAMMU", "KATHUA", "UDHAMPUR", "SAMBA"],
-    "UTTAR-PRADESH": ["LUCKNOW", "AGRA", "KANPUR", "VARANASI", "MEERUT", "BAREILLY", "ALIGARH"],
-    "MADHYA-PRADESH": ["INDORE", "BHOPAL", "UJJAIN", "GWALIOR", "JABALPUR", "SAGAR"],
-    "MAHARASHTRA": ["NASHIK", "PUNE", "NAGPUR", "SOLAPUR", "KOLHAPUR", "AHMEDNAGAR"],
-    "GUJARAT": ["RAJKOT", "AHMEDABAD", "SURAT", "JUNAGADH", "BHAVNAGAR", "JAMNAGAR"],
-    "RAJASTHAN": ["JAIPUR", "JODHPUR", "KOTA", "BIKANER", "AJMER", "UDAIPUR"],
-    "KARNATAKA": ["BANGALORE", "HUBLI", "BELGAUM", "MYSORE", "DAVANGERE"],
-    "TAMIL-NADU": ["CHENNAI", "COIMBATORE", "MADURAI", "SALEM", "TRICHY"],
-    "ANDHRA-PRADESH": ["HYDERABAD", "VIJAYAWADA", "GUNTUR", "KURNOOL", "VISAKHAPATNAM"],
-    "TELANGANA": ["HYDERABAD", "WARANGAL", "NIZAMABAD", "KARIMNAGAR"],
-  };
-  
-  const commodities = ["WHEAT", "PADDY", "COTTON", "SOYABEAN", "MAIZE", "ONION", "POTATO", "TOMATO", "MUSTARD", "GRAM", "CHANA", "GROUNDNUT"];
-  
-  // Generate district links
-  const districtLinks = {};
-  for (const [state, districts] of Object.entries(stateDistricts)) {
-    districtLinks[state] = districts.map(d => ({
-      district: d,
-      url: `https://www.kisandeals.com/mandiprices/district/ALL/${state}/${d}`
-    }));
-  }
-  
-  res.json({
-    success: true,
-    description: "Direct links to KisanDeals for live mandi prices",
-    urlPatterns: {
-      byDistrict: "https://www.kisandeals.com/mandiprices/district/{COMMODITY}/{STATE}/{DISTRICT}",
-      byCommodity: "https://www.kisandeals.com/mandiprices/{COMMODITY}",
-      example: "https://www.kisandeals.com/mandiprices/district/ALL/JAMMU/ALL"
-    },
-    states: Object.keys(stateDistricts),
-    commodities,
-    districtLinks,
-    tools: {
-      excelDownload: "Click 'Export To Excel' button on any prices page",
-      pricePredictor: "https://www.kisandeals.com/apmc/predict",
-      comparePrices: "https://www.kisandeals.com/apmc/compare",
-    },
-  });
-});
-
 
 // Govt Schemes for Farmers using Exa
 app.post("/api/schemes", async (req, res) => {
@@ -874,12 +676,9 @@ app.listen(port, () => {
   console.log(`📝 Endpoints:`);
   console.log(`   POST http://localhost:${port}/generate-text`);
   console.log(`   GET  http://localhost:${port}/api/market-prices`);
+  console.log(`   GET  http://localhost:${port}/api/mandi-rates`);
   console.log(`   GET  http://localhost:${port}/api/weather`);
   console.log(`   POST http://localhost:${port}/api/plant-detection/detect`);
   console.log(`   GET  http://localhost:${port}/api/plant-detection/history/:userId`);
   console.log(`   POST http://localhost:${port}/api/detect-disease`);
-  console.log(`📝 Endpoints:`);
-  console.log(`   POST http://localhost:${port}/generate-text`);
-  console.log(`   GET  http://localhost:${port}/api/market-prices`);
-  console.log(`   GET  http://localhost:${port}/api/weather`);
 });

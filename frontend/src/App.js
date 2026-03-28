@@ -23,7 +23,66 @@ const COLORS = {
   inputBorder: "rgba(127,255,106,0.25)",
 };
 
-const API_URL = process.env.REACT_APP_API_URL || "https://kris-sarthi-1.onrender.com";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+// Names aligned with typical Agmarknet / state records on data.gov.in (spell district to match API).
+const MANDI_RATE_STATES = [
+  "Andaman and Nicobar Islands",
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chandigarh",
+  "Chhattisgarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jammu and Kashmir",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Ladakh",
+  "Lakshadweep",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Puducherry",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+];
+
+const MANDI_RATE_COMMODITIES = [
+  "Wheat",
+  "Rice",
+  "Maize",
+  "Onion",
+  "Potato",
+  "Tomato",
+  "Soyabean",
+  "Mustard",
+  "Cotton",
+  "Sugarcane",
+  "Groundnut",
+  "Barley",
+];
+
+/** Sentinel for /api/mandi-rates — backend omits State/District filters when value is `all` */
+const MANDI_ALL = "all";
+const MANDI_DISTRICT_SPECIFIC = "specific";
 
 function App() {
   const GUEST_USER_ID = "000000000000000000000001";
@@ -749,15 +808,20 @@ function App() {
   const [market, setMarket] = useState([]);
   const [marketLoading, setMarketLoading] = useState(false);
   const [marketError, setMarketError] = useState(null);
-  const [marketStates, setMarketStates] = useState([]);
-  const [marketCommodities, setMarketCommodities] = useState([]);
-  const [selectedState, setSelectedState] = useState("PUNJAB");
-  const [selectedCommodity, setSelectedCommodity] = useState("all");
-  const [marketSearch, setMarketSearch] = useState("");
-  const [favoriteItems, setFavoriteItems] = useState(["Wheat", "Rice (Paddy)", "Cotton"]);
-  const [marketView, setMarketView] = useState("list"); // "list" or "favorites"
-  const [marketSource, setMarketSource] = useState(""); // Data source indicator
-  const [marketLastUpdated, setMarketLastUpdated] = useState(null); // Last update timestamp
+  const [mandiState, setMandiState] = useState("Punjab");
+  const [mandiDistrictScope, setMandiDistrictScope] = useState(MANDI_DISTRICT_SPECIFIC); // "all" | "specific"
+  const [mandiDistrict, setMandiDistrict] = useState("");
+  const [mandiCommodity, setMandiCommodity] = useState("");
+  const [mandiDate, setMandiDate] = useState("");
+  const [marketTotal, setMarketTotal] = useState(0);
+  const [mandiHasFetched, setMandiHasFetched] = useState(false);
+  const [marketSource, setMarketSource] = useState("");
+  const [marketLastUpdated, setMarketLastUpdated] = useState(null);
+  const [mandiAgmarknetAvailable, setMandiAgmarknetAvailable] = useState(true);
+  const [mandiWebResults, setMandiWebResults] = useState([]);
+  const [mandiWebSearchError, setMandiWebSearchError] = useState(null);
+  const [mandiNoAgmarknetMessage, setMandiNoAgmarknetMessage] = useState("");
+  const [mandiSearchingWeb, setMandiSearchingWeb] = useState(false);
   
   // Crop Price Tracking State
   const [myCropPrice, setMyCropPrice] = useState(null); // Current price of selected crop
@@ -1064,57 +1128,126 @@ function App() {
     }
   };
 
-const fetchMarket = async () => {
-  setMarketLoading(true);
-  setMarketError(null);
-  
-  try {
-    // Use live market prices API that scrapes KisanDeals
-    const params = new URLSearchParams();
-    params.append("state", selectedState);
-    if (selectedCommodity !== "all") params.append("commodity", selectedCommodity);
-    
-    const response = await axios.get(`${API_URL}/api/live-market-prices?${params.toString()}`);
-    
-    if (response.data.success || response.data.data?.length > 0) {
-      // Add trend calculation based on min/max price difference
-      const enhancedData = response.data.data.map(item => ({
-        ...item,
-        trend: item.modalPrice > item.minPrice * 1.05 ? "up" : 
-               item.modalPrice < item.maxPrice * 0.95 ? "down" : "stable",
-        changePercent: ((item.maxPrice - item.minPrice) / item.modalPrice * 50).toFixed(1),
-      }));
-      
-      setMarket(enhancedData);
-      setMarketSource(response.data.source || "KisanDeals");
-      setMarketLastUpdated(response.data.lastUpdated || new Date().toISOString());
-      
-      // Extract unique states and commodities for filters
-      const states = [...new Set(enhancedData.map(d => d.state).filter(Boolean))];
-      const commodities = [...new Set(enhancedData.map(d => d.commodity).filter(Boolean))];
-      if (states.length) setMarketStates(states);
-      if (commodities.length) setMarketCommodities(commodities);
-    } else {
-      setMarketError(response.data.message || "No prices found for this selection");
-    }
-  } catch (error) {
-    console.error("Market fetch error:", error);
-    setMarketError("Could not fetch live prices. Using estimated data.");
-    // Fallback to static data
-    setMarket([
-      { commodity: "Wheat", icon: "🌾", modalPrice: 2275, minPrice: 2100, maxPrice: 2400, unit: "quintal", trend: "up", changePercent: 1.5, state: "Punjab", mandi: "Khanna", isLive: false },
-      { commodity: "Rice (Paddy)", icon: "🍚", modalPrice: 2183, minPrice: 2000, maxPrice: 2300, unit: "quintal", trend: "stable", changePercent: 0, state: "Punjab", mandi: "Amritsar", isLive: false },
-      { commodity: "Cotton", icon: "☁️", modalPrice: 6620, minPrice: 6200, maxPrice: 6800, unit: "quintal", trend: "down", changePercent: -0.8, state: "Punjab", mandi: "Bathinda", isLive: false },
-      { commodity: "Mustard", icon: "💛", modalPrice: 5650, minPrice: 5400, maxPrice: 5850, unit: "quintal", trend: "up", changePercent: 0.5, state: "Punjab", mandi: "Fazilka", isLive: false },
-      { commodity: "Potato", icon: "🥔", modalPrice: 1200, minPrice: 1000, maxPrice: 1450, unit: "quintal", trend: "stable", changePercent: 0.2, state: "Punjab", mandi: "Jalandhar", isLive: false },
-    ]);
-    setMarketSource("Estimated");
+const fetchMarket = async (append = false) => {
+  if (mandiDistrictScope === MANDI_DISTRICT_SPECIFIC && !mandiDistrict.trim()) {
+    setMarketError('Enter a district name, or choose "All districts".');
+    return;
   }
-  
+  setMarketLoading(true);
+  if (!append) {
+    setMarketError(null);
+    setMandiWebSearchError(null);
+    setMandiWebResults([]);
+    setMandiNoAgmarknetMessage("");
+    setMandiSearchingWeb(false);
+  }
+  try {
+    const districtParam =
+      mandiDistrictScope === MANDI_ALL ? MANDI_ALL : mandiDistrict.trim();
+
+    const buildSearchParams = (offsetVal, agmarknetOnly) => {
+      const p = new URLSearchParams({
+        state: mandiState,
+        district: districtParam,
+        limit: "50",
+        offset: String(offsetVal),
+      });
+      if (mandiCommodity) p.append("commodity", mandiCommodity);
+      if (mandiDate.trim()) p.append("date", mandiDate.trim());
+      if (agmarknetOnly) p.set("exaFallback", "false");
+      return p;
+    };
+
+    if (append) {
+      const offset = market.length;
+      const response = await axios.get(
+        `${API_URL}/api/mandi-rates?${buildSearchParams(offset, true).toString()}`
+      );
+      const records = response.data.records || [];
+      if (records.length > 0 && response.data.agmarknetAvailable !== false) {
+        const total =
+          typeof response.data.total === "number" ? response.data.total : records.length;
+        const mapped = records.map((r) => ({
+          ...r,
+          mandi: r.market,
+          unit: "quintal",
+        }));
+        setMarketTotal(total);
+        setMarket((prev) => [...prev, ...mapped]);
+        setMarketSource("Agmarknet · data.gov.in");
+        setMarketLastUpdated(new Date().toISOString());
+        setMandiAgmarknetAvailable(true);
+      }
+      setMandiHasFetched(true);
+      setMarketLoading(false);
+      return;
+    }
+
+    const r1 = await axios.get(
+      `${API_URL}/api/mandi-rates?${buildSearchParams(0, true).toString()}`
+    );
+    const rec1 = r1.data.records || [];
+    if (rec1.length > 0) {
+      const total =
+        typeof r1.data.total === "number" ? r1.data.total : rec1.length;
+      const mapped = rec1.map((r) => ({
+        ...r,
+        mandi: r.market,
+        unit: "quintal",
+      }));
+      setMarketTotal(total);
+      setMarket(mapped);
+      setMandiAgmarknetAvailable(true);
+      setMandiWebResults([]);
+      setMandiWebSearchError(null);
+      setMandiNoAgmarknetMessage("");
+      setMarketSource("Agmarknet · data.gov.in");
+      setMarketLastUpdated(new Date().toISOString());
+      setMandiHasFetched(true);
+      setMarketLoading(false);
+      return;
+    }
+
+    setMandiSearchingWeb(true);
+    const r2 = await axios.get(
+      `${API_URL}/api/mandi-rates?${buildSearchParams(0, false).toString()}`
+    );
+    setMandiSearchingWeb(false);
+
+    setMarket([]);
+    setMarketTotal(0);
+    setMandiAgmarknetAvailable(false);
+    setMandiNoAgmarknetMessage(r2.data.message || "");
+    setMandiWebResults(Array.isArray(r2.data.webResults) ? r2.data.webResults : []);
+    setMandiWebSearchError(r2.data.webSearchError || null);
+    setMarketLastUpdated(new Date().toISOString());
+    if ((r2.data.webResults || []).length > 0) {
+      setMarketSource("Exa web search");
+    } else {
+      setMarketSource("");
+    }
+    setMandiHasFetched(true);
+  } catch (error) {
+    console.error("Mandi rates fetch error:", error);
+    setMandiSearchingWeb(false);
+    const msg =
+      error.response?.data?.error ||
+      error.message ||
+      "Could not fetch mandi rates. Try again.";
+    setMarketError(msg);
+    if (!append) {
+      setMarket([]);
+      setMarketTotal(0);
+      setMandiWebResults([]);
+      setMandiWebSearchError(null);
+      setMandiNoAgmarknetMessage("");
+    }
+    setMandiHasFetched(true);
+  }
   setMarketLoading(false);
 };
 
-// Fetch price for selected crop from calendar
+// Fetch price for selected crop from calendar (Agmarknet via backend)
 const fetchMyCropPrice = async (cropName) => {
   if (!cropName || cropName === "Select") {
     setMyCropPrice(null);
@@ -1123,35 +1256,71 @@ const fetchMyCropPrice = async (cropName) => {
   
   setMyCropPriceLoading(true);
   
+  const cropMapping = {
+    Wheat: "Wheat",
+    Rice: "Rice",
+    Maize: "Maize",
+    Cotton: "Cotton",
+    Sugarcane: "Sugarcane",
+    Potato: "Potato",
+    Mustard: "Mustard",
+    Bajra: "Bajra",
+  };
+  const commodity = cropMapping[cropName] || cropName;
+
   try {
-    // Map crop names to commodity names used in market API
-    const cropMapping = {
-      "Wheat": "WHEAT",
-      "Rice": "RICE",
-      "Maize": "MAIZE",
-      "Cotton": "COTTON",
-      "Sugarcane": "SUGARCANE",
-      "Potato": "POTATO",
-      "Mustard": "MUSTARD",
-      "Bajra": "BAJRA",
-    };
-    
-    const commodity = cropMapping[cropName] || cropName.toUpperCase();
-    const params = new URLSearchParams();
-    params.append("state", selectedState);
-    params.append("commodity", commodity);
-    
-    const response = await axios.get(`${API_URL}/api/live-market-prices?${params.toString()}`);
-    
-    if (response.data.data?.length > 0) {
-      const priceData = response.data.data[0]; // Get first matching price
-      
-      // Calculate average from all prices for this commodity
-      const allPrices = response.data.data;
-      const avgPrice = Math.round(allPrices.reduce((sum, p) => sum + p.modalPrice, 0) / allPrices.length);
-      const minPrice = Math.min(...allPrices.map(p => p.minPrice));
-      const maxPrice = Math.max(...allPrices.map(p => p.maxPrice));
-      
+    if (mandiDistrictScope === MANDI_DISTRICT_SPECIFIC && !mandiDistrict.trim()) {
+      const fallbackPrices = {
+        Wheat: { price: 2275, msp: 2275 },
+        Rice: { price: 2183, msp: 2183 },
+        Maize: { price: 2090, msp: 2090 },
+        Cotton: { price: 6620, msp: 6620 },
+        Sugarcane: { price: 315, msp: 315 },
+        Potato: { price: 1200, msp: null },
+        Mustard: { price: 5650, msp: 5650 },
+        Bajra: { price: 2500, msp: 2500 },
+      };
+      const fallback = fallbackPrices[cropName] || { price: 2000, msp: null };
+      setMyCropPrice({
+        commodity: cropName,
+        icon: cropOptions.find((c) => c.name === cropName)?.icon || "🌱",
+        avgPrice: fallback.price,
+        minPrice: Math.round(fallback.price * 0.9),
+        maxPrice: Math.round(fallback.price * 1.1),
+        modalPrice: fallback.price,
+        msp: fallback.msp,
+        mandi: "Add district or choose All districts for live rates",
+        state: mandiState === MANDI_ALL ? "All states" : mandiState,
+        isLive: false,
+        source: "Estimated",
+        lastUpdated: new Date().toISOString(),
+        priceCount: 1,
+      });
+      setMyCropPriceLoading(false);
+      return;
+    }
+
+    const districtParam =
+      mandiDistrictScope === MANDI_ALL ? MANDI_ALL : mandiDistrict.trim();
+    const params = new URLSearchParams({
+      state: mandiState,
+      district: districtParam,
+      commodity,
+      limit: "100",
+      offset: "0",
+    });
+    const response = await axios.get(`${API_URL}/api/mandi-rates?${params.toString()}`);
+    const records = response.data.records || [];
+
+    if (records.length > 0) {
+      const modals = records.map((p) => Number(p.modalPrice)).filter((n) => Number.isFinite(n));
+      const mins = records.map((p) => Number(p.minPrice)).filter((n) => Number.isFinite(n));
+      const maxs = records.map((p) => Number(p.maxPrice)).filter((n) => Number.isFinite(n));
+      const avgPrice = Math.round(modals.reduce((a, b) => a + b, 0) / modals.length);
+      const minPrice = mins.length ? Math.min(...mins) : avgPrice;
+      const maxPrice = maxs.length ? Math.max(...maxs) : avgPrice;
+      const priceData = records[0];
+
       const newPriceData = {
         commodity: cropName,
         icon: cropOptions.find(c => c.name === cropName)?.icon || "🌱",
@@ -1159,12 +1328,12 @@ const fetchMyCropPrice = async (cropName) => {
         minPrice: minPrice,
         maxPrice: maxPrice,
         modalPrice: avgPrice,
-        mandi: priceData.mandi || "State Average",
-        state: selectedState.replace(/-/g, ' '),
-        isLive: priceData.isLive !== false,
-        source: response.data.source,
+        mandi: priceData.market || priceData.mandi || "Multiple mandis",
+        state: mandiState === MANDI_ALL ? "All states" : mandiState,
+        isLive: true,
+        source: "Agmarknet · data.gov.in",
         lastUpdated: new Date().toISOString(),
-        priceCount: allPrices.length,
+        priceCount: records.length,
       };
       
       // Check for price change and show notification
@@ -1210,7 +1379,7 @@ const fetchMyCropPrice = async (cropName) => {
         modalPrice: fallback.price,
         msp: fallback.msp,
         mandi: "Estimated",
-        state: selectedState.replace(/-/g, ' '),
+        state: mandiState === MANDI_ALL ? "All states" : mandiState,
         isLive: false,
         source: "Estimated",
         lastUpdated: new Date().toISOString(),
@@ -1231,7 +1400,7 @@ React.useEffect(() => {
   } else {
     setMyCropPrice(null);
   }
-}, [selectedCrop, selectedState]);
+}, [selectedCrop, mandiState, mandiDistrict, mandiDistrictScope]);
 
 // Periodic price refresh (every 5 minutes)
 React.useEffect(() => {
@@ -1242,22 +1411,7 @@ React.useEffect(() => {
     
     return () => clearInterval(interval);
   }
-}, [selectedCrop, priceAlertEnabled]);
-
-// Toggle favorite commodity
-const toggleFavorite = (commodityName) => {
-  setFavoriteItems(prev => 
-    prev.includes(commodityName) 
-      ? prev.filter(c => c !== commodityName)
-      : [...prev, commodityName]
-  );
-};
-
-// Filter market data based on search
-const filteredMarket = market.filter(item => 
-  item.commodity.toLowerCase().includes(marketSearch.toLowerCase()) ||
-  item.mandi.toLowerCase().includes(marketSearch.toLowerCase())
-);
+}, [selectedCrop, priceAlertEnabled, mandiState, mandiDistrict, mandiDistrictScope]);
 
 const landingFeatures = [
   {
@@ -1734,7 +1888,22 @@ const exploreContent = {
     refreshPrices: "Refresh Prices",
     loadingMarket: "Loading market data...",
     noMarketLoaded: "No market data loaded yet.",
-    marketListHeading: "All loaded commodities",
+    marketIdleHint: "Pick state (or All states), district scope (All districts or one name), optional commodity/date, then Fetch Rates.",
+    mandiAllStates: "All states",
+    mandiDistrictModeAll: "All districts",
+    mandiDistrictModeOne: "One district",
+    mandiNationwideHint: "Large dataset — Agmarknet returns one page at a time. Use Load more for the next rows.",
+    mandiWebLoadingNote:
+      "Agmarknet has no data — searching the web for live prices...",
+    mandiWebSectionTitle: "Live Web Results",
+    mandiWebSectionSubtitle: "Sourced via Exa — verify before acting on prices",
+    mandiWebEmptyBoth:
+      "⚠️ No Agmarknet data found. ❌ Web search also returned no results. Try agmarknet.gov.in or krishijagran.com manually.",
+    mandiDistrictPh: "District name",
+    mandiDatePh: "Arrival date (optional, dd-MM-yyyy)",
+    mandiFetchCta: "Fetch Rates",
+    mandiLoadMore: "Load more",
+    mandiAllCommodities: "All commodities",
     cropLabel: "Crop",
     unitFallback: "quintal",
     assistantTitle: "GreenGeenie Assistant",
@@ -1787,7 +1956,22 @@ const exploreContent = {
     refreshPrices: "भाव रीफ्रेश करें",
     loadingMarket: "मंडी डेटा लोड हो रहा है...",
     noMarketLoaded: "अभी मंडी डेटा उपलब्ध नहीं है।",
-    marketListHeading: "सभी लोड कीमतें",
+    marketIdleHint: "राज्य (या सभी राज्य), जिला सभी/एक नाम, वैकल्पिक फसल/तारीख, फिर फेच रेट्स।",
+    mandiAllStates: "सभी राज्य",
+    mandiDistrictModeAll: "सभी जिले",
+    mandiDistrictModeOne: "एक जिला",
+    mandiNationwideHint: "डेटा बहुत बड़ा है — एक समय में एक पेज। और लोड करें से अगले पंक्तियाँ।",
+    mandiWebLoadingNote:
+      "Agmarknet has no data — searching the web for live prices...",
+    mandiWebSectionTitle: "Live Web Results",
+    mandiWebSectionSubtitle: "Sourced via Exa — verify before acting on prices",
+    mandiWebEmptyBoth:
+      "⚠️ No Agmarknet data found. ❌ Web search also returned no results. Try agmarknet.gov.in or krishijagran.com manually.",
+    mandiDistrictPh: "जिला",
+    mandiDatePh: "आगमन तिथि (वैकल्पिक, dd-MM-yyyy)",
+    mandiFetchCta: "भाव लाएँ",
+    mandiLoadMore: "और लोड करें",
+    mandiAllCommodities: "सभी फसलें",
     cropLabel: "फसल",
     unitFallback: "क्विंटल",
     assistantTitle: "ग्रीनजीनी सहायक",
@@ -1840,7 +2024,22 @@ const exploreContent = {
     refreshPrices: "ਰੇਟ ਰਿਫਰੈਸ਼ ਕਰੋ",
     loadingMarket: "ਮੰਡੀ ਡਾਟਾ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
     noMarketLoaded: "ਹਾਲੇ ਮੰਡੀ ਡਾਟਾ ਨਹੀਂ ਮਿਲਿਆ।",
-    marketListHeading: "ਸਾਰੀਆਂ ਲੋਡ ਕੀਮਤਾਂ",
+    marketIdleHint: "ਰਾਜ (ਜਾਂ ਸਾਰੇ ਰਾਜ), ਜ਼ਿਲ੍ਹਾ ਸਾਰੇ/ਇੱਕ ਨਾਂ, ਚਾਹੋ ਤਾਂ ਫਸਲ/ਤਾਰੀਖ, ਫਿਰ ਫੈਚ ਰੇਟਸ।",
+    mandiAllStates: "ਸਾਰੇ ਰਾਜ",
+    mandiDistrictModeAll: "ਸਾਰੇ ਜ਼ਿਲ੍ਹੇ",
+    mandiDistrictModeOne: "ਇੱਕ ਜ਼ਿਲ੍ਹਾ",
+    mandiNationwideHint: "ਬਹੁਤ ਵੱਡਾ ਡਾਟਾ — ਇੱਕ ਵਾਰ ਇੱਕ ਪੇਜ। ਹੋਰ ਲੋਡ ਕਰੋ ਨਾਲ ਅਗਲੀਆਂ ਕਤਾਰਾਂ।",
+    mandiWebLoadingNote:
+      "Agmarknet has no data — searching the web for live prices...",
+    mandiWebSectionTitle: "Live Web Results",
+    mandiWebSectionSubtitle: "Sourced via Exa — verify before acting on prices",
+    mandiWebEmptyBoth:
+      "⚠️ No Agmarknet data found. ❌ Web search also returned no results. Try agmarknet.gov.in or krishijagran.com manually.",
+    mandiDistrictPh: "ਜ਼ਿਲ੍ਹਾ",
+    mandiDatePh: "ਪਹੁੰਚ ਮਿਤੀ (ਵਿਕਲਪਿਕ, dd-MM-yyyy)",
+    mandiFetchCta: "ਰੇਟ ਲਿਆਓ",
+    mandiLoadMore: "ਹੋਰ ਲੋਡ ਕਰੋ",
+    mandiAllCommodities: "ਸਾਰੀਆਂ ਫਸਲਾਂ",
     cropLabel: "ਫਸਲ",
     unitFallback: "ਕੁਇੰਟਲ",
     assistantTitle: "GreenGeenie ਸਹਾਇਕ",
@@ -1893,7 +2092,22 @@ const exploreContent = {
     refreshPrices: "விலை புதுப்பிக்க",
     loadingMarket: "சந்தை தரவு ஏற்றப்படுகிறது...",
     noMarketLoaded: "இன்னும் சந்தை தரவு இல்லை.",
-    marketListHeading: "ஏற்றப்பட்ட அனைத்து பொருட்கள்",
+    marketIdleHint: "மாநிலம் (அல்லது அனைத்து), மாவட்டம் அனைத்து/ஒரு பெயர், விருப்பப் பயிர்/தேதி, பின் விலை பெறு.",
+    mandiAllStates: "அனைத்து மாநிலங்கள்",
+    mandiDistrictModeAll: "அனைத்து மாவட்டங்கள்",
+    mandiDistrictModeOne: "ஒரு மாவட்டம்",
+    mandiNationwideHint: "மிகப் பெரிய தரவு — ஒரு நேரத்தில் ஒரு பக்கம். மேலும் ஏற்று அழுத்தவும்.",
+    mandiWebLoadingNote:
+      "Agmarknet has no data — searching the web for live prices...",
+    mandiWebSectionTitle: "Live Web Results",
+    mandiWebSectionSubtitle: "Sourced via Exa — verify before acting on prices",
+    mandiWebEmptyBoth:
+      "⚠️ No Agmarknet data found. ❌ Web search also returned no results. Try agmarknet.gov.in or krishijagran.com manually.",
+    mandiDistrictPh: "மாவட்டம்",
+    mandiDatePh: "வருகை தேதி (விருப்பம், dd-MM-yyyy)",
+    mandiFetchCta: "விலை பெறு",
+    mandiLoadMore: "மேலும் ஏற்று",
+    mandiAllCommodities: "அனைத்து பயிர்களும்",
     cropLabel: "பயிர்",
     unitFallback: "க்வின்டல்",
     assistantTitle: "GreenGeenie உதவியாளர்",
@@ -2360,8 +2574,8 @@ if (showFeatureHub) {
           </article>
         </section>
 
-        <section className="ks-explore-row">
-          <article className="ks-explore-card ks-explore-card-expand">
+        <section className="ks-explore-row ks-explore-row-single">
+          <article className="ks-explore-card">
             <span className="ks-feature-tag">Local</span>
             <h3>{activeExplore.weatherTitle}</h3>
             <p>{activeExplore.weatherDesc}</p>
@@ -2418,70 +2632,304 @@ if (showFeatureHub) {
               </div>
             )}
           </article>
-
-          <article className="ks-explore-card ks-explore-card-expand">
-            <span className="ks-feature-tag">Live Data</span>
-            <h3>{activeExplore.marketTitle}</h3>
-            <p>{activeExplore.marketDesc}</p>
-            <div className="ks-explore-actions">
-              <button className="ks-cta" onClick={fetchMarket}>{activeExplore.refreshPrices}</button>
-            </div>
-            {marketLoading ? (
-              <p className="ks-inline-note">{activeExplore.loadingMarket}</p>
-            ) : market.length ? (
-              <div className="ks-explore-detail">
-                <p className="ks-explore-detail-head">{activeExplore.marketListHeading}</p>
-                <ul className="ks-explore-scroll ks-market-hub-list">
-                  {market.map((row, idx) => (
-                    <li key={`${row.commodity}-${idx}`}>
-                      <span className="ks-market-hub-crop">
-                        {row.icon ? `${row.icon} ` : ""}{row.commodity || activeExplore.cropLabel}
-                      </span>
-                      <span className="ks-market-hub-price">
-                        ₹{row.modalPrice ?? "-"} / {row.unit || activeExplore.unitFallback}
-                      </span>
-                      {(row.state || row.mandi) && (
-                        <span className="ks-market-hub-meta">
-                          {[row.mandi, row.state].filter(Boolean).join(" · ")}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <p className="ks-inline-note">{activeExplore.noMarketLoaded}</p>
-            )}
-          </article>
         </section>
 
-        <section className="ks-explore-row">
-          <article id="feature-schemes" className="ks-explore-card ks-explore-card-expand">
-            <span className="ks-feature-tag">Policy</span>
-            <h3>{activeExplore.govtSchemesTitle}</h3>
-            <p>{activeExplore.govtSchemesDesc}</p>
-            <div className="ks-explore-embed ks-explore-scroll">
-              <GovtSchemes
-                key={`hub-schemes-${exploreStateLabel}-${exploreCropForPolicy}-${language}`}
-                userState={exploreStateLabel}
-                userCrop={exploreCropForPolicy}
-                userLanguage={exploreSchemeLanguage}
-              />
-            </div>
-          </article>
+        <section className="ks-explore-row ks-explore-row-single">
+          <article className="ks-explore-card">
+            <span className="ks-feature-tag">Agmarknet</span>
+            <h3>{activeExplore.marketTitle}</h3>
+            <p>{activeExplore.marketDesc}</p>
 
-          <article id="feature-crop-insurance" className="ks-explore-card ks-explore-card-expand">
-            <span className="ks-feature-tag">Risk</span>
-            <h3>{activeExplore.cropFailureTitle}</h3>
-            <p>{activeExplore.cropFailureDesc}</p>
-            <div className="ks-explore-embed ks-explore-embed-light ks-explore-scroll">
-              <CropInsurance
-                key={`hub-insurance-${exploreStateLabel}-${exploreCropForPolicy}-${language}`}
-                userState={exploreStateLabel}
-                userCrop={exploreCropForPolicy}
-                userLanguage={exploreSchemeLanguage}
+            <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "stretch" }}>
+                <select
+                  className="ks-explore-select"
+                  value={mandiState}
+                  onChange={(e) => setMandiState(e.target.value)}
+                  aria-label="State"
+                  style={{ flex: "1 1 160px", minWidth: 0 }}
+                >
+                  <option value={MANDI_ALL}>{activeExplore.mandiAllStates}</option>
+                  {MANDI_RATE_STATES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="ks-explore-select"
+                  value={mandiDistrictScope}
+                  onChange={(e) => setMandiDistrictScope(e.target.value)}
+                  aria-label="District scope"
+                  style={{ flex: "1 1 160px", minWidth: 0 }}
+                >
+                  <option value={MANDI_ALL}>{activeExplore.mandiDistrictModeAll}</option>
+                  <option value={MANDI_DISTRICT_SPECIFIC}>{activeExplore.mandiDistrictModeOne}</option>
+                </select>
+                {mandiDistrictScope === MANDI_DISTRICT_SPECIFIC && (
+                  <input
+                    className="ks-explore-select"
+                    type="text"
+                    placeholder={activeExplore.mandiDistrictPh}
+                    value={mandiDistrict}
+                    onChange={(e) => setMandiDistrict(e.target.value)}
+                    aria-label={activeExplore.mandiDistrictPh}
+                    style={{ flex: "1 1 160px", minWidth: 0 }}
+                  />
+                )}
+                <select
+                  className="ks-explore-select"
+                  value={mandiCommodity}
+                  onChange={(e) => setMandiCommodity(e.target.value)}
+                  aria-label="Commodity"
+                  style={{ flex: "1 1 160px", minWidth: 0 }}
+                >
+                  <option value="">{activeExplore.mandiAllCommodities}</option>
+                  {MANDI_RATE_COMMODITIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {(mandiState === MANDI_ALL || mandiDistrictScope === MANDI_ALL) && (
+                <p className="ks-inline-note" style={{ margin: 0 }}>
+                  {activeExplore.mandiNationwideHint}
+                </p>
+              )}
+              <input
+                className="ks-explore-select"
+                type="text"
+                placeholder={activeExplore.mandiDatePh}
+                value={mandiDate}
+                onChange={(e) => setMandiDate(e.target.value)}
+                aria-label={activeExplore.mandiDatePh}
+                style={{ width: "100%", maxWidth: 420, boxSizing: "border-box" }}
               />
+              <div className="ks-explore-actions" style={{ marginTop: 0 }}>
+                <button
+                  type="button"
+                  className="ks-cta"
+                  onClick={() => fetchMarket(false)}
+                  disabled={marketLoading}
+                >
+                  {marketLoading ? activeExplore.loadingMarket : activeExplore.mandiFetchCta}
+                </button>
+                {marketTotal > market.length && market.length > 0 && mandiAgmarknetAvailable && (
+                  <button
+                    type="button"
+                    className="ks-ghost"
+                    onClick={() => fetchMarket(true)}
+                    disabled={marketLoading}
+                  >
+                    {activeExplore.mandiLoadMore}
+                  </button>
+                )}
+              </div>
             </div>
+
+            {marketError && (
+              <p className="ks-inline-note" style={{ color: "#ffb4b4", marginTop: 10 }}>
+                {marketError}
+              </p>
+            )}
+
+            {mandiWebSearchError && (
+              <p className="ks-inline-note" style={{ color: "#ffb4b4", marginTop: 10 }}>
+                {mandiWebSearchError}
+              </p>
+            )}
+
+            {mandiWebResults.length > 0 && (
+              <div
+                style={{
+                  background: "rgba(255, 193, 7, 0.12)",
+                  border: "1px solid rgba(255, 193, 7, 0.45)",
+                  color: "#ffcc80",
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  fontSize: 12,
+                  marginTop: 10,
+                }}
+              >
+                ⚠️ No data available on Agmarknet for{" "}
+                <strong>{mandiCommodity || "all commodities"}</strong> in{" "}
+                <strong>
+                  {mandiDistrictScope === MANDI_ALL ? "all districts" : mandiDistrict || "—"}
+                </strong>
+                , <strong>{mandiState === MANDI_ALL ? "all states" : mandiState}</strong>. Showing live
+                web results instead.
+              </div>
+            )}
+
+            {mandiWebResults.length > 0 && (
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: "12px 10px",
+                  borderRadius: 12,
+                  background: "rgba(33, 150, 243, 0.08)",
+                  border: "1px solid rgba(100, 181, 246, 0.35)",
+                }}
+              >
+                <p style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700, color: "#90caf9" }}>
+                  {activeExplore.mandiWebSectionTitle}
+                </p>
+                <p style={{ margin: "0 0 10px", fontSize: 11, color: "rgba(240,244,238,0.65)" }}>
+                  {activeExplore.mandiWebSectionSubtitle}
+                </p>
+                {mandiWebResults.map((w, idx) => (
+                  <div
+                    key={`${w.url}-${idx}`}
+                    style={{
+                      background: "rgba(0,0,0,0.2)",
+                      borderRadius: 8,
+                      padding: "10px 12px",
+                      marginBottom: 8,
+                      border: "1px solid rgba(127,255,106,0.15)",
+                    }}
+                  >
+                    <a
+                      href={w.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontWeight: 600, color: "#b9ffab", fontSize: 13 }}
+                    >
+                      {w.title}
+                    </a>
+                    <div
+                      style={{
+                        marginTop: 6,
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 8,
+                        fontSize: 10,
+                        color: "rgba(240,244,238,0.7)",
+                      }}
+                    >
+                      {w.source ? (
+                        <span
+                          style={{
+                            background: "rgba(127,255,106,0.12)",
+                            padding: "2px 8px",
+                            borderRadius: 999,
+                          }}
+                        >
+                          {w.source}
+                        </span>
+                      ) : null}
+                      {w.publishedDate ? <span>{w.publishedDate}</span> : null}
+                    </div>
+                    {w.summary ? (
+                      <p style={{ margin: "8px 0 0", fontSize: 12, lineHeight: 1.45, opacity: 0.9 }}>
+                        {w.summary}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {marketLoading && (
+              <div style={{ marginTop: 12 }}>
+                {mandiSearchingWeb && (
+                  <p className="ks-inline-note" style={{ marginBottom: 8 }}>
+                    {activeExplore.mandiWebLoadingNote}
+                  </p>
+                )}
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="anim-shimmer" style={{ height: 12, borderRadius: 6, marginBottom: 8 }} />
+                ))}
+              </div>
+            )}
+
+            {!marketLoading && market.length > 0 && mandiAgmarknetAvailable && (
+              <p className="ks-inline-note" style={{ marginTop: 10 }}>
+                Showing {market.length} of {marketTotal}
+                {" · "}
+                <strong>
+                  {market[0]?.commodity || activeExplore.cropLabel}: ₹
+                  {Number.isFinite(Number(market[0]?.modalPrice))
+                    ? Number(market[0].modalPrice).toLocaleString("en-IN")
+                    : "—"}{" "}
+                  / {market[0]?.unit || activeExplore.unitFallback}
+                </strong>
+                {mandiCommodity ? ` · ${mandiCommodity}` : ""}
+              </p>
+            )}
+
+            {!marketLoading &&
+              mandiHasFetched &&
+              market.length === 0 &&
+              !marketError &&
+              !mandiWebSearchError &&
+              mandiWebResults.length === 0 &&
+              mandiAgmarknetAvailable && (
+              <p className="ks-inline-note" style={{ marginTop: 10 }}>
+                {activeExplore.noMarketLoaded}
+              </p>
+            )}
+
+            {!marketLoading &&
+              mandiHasFetched &&
+              market.length === 0 &&
+              !marketError &&
+              !mandiWebSearchError &&
+              mandiWebResults.length === 0 &&
+              !mandiAgmarknetAvailable && (
+              <p className="ks-inline-note" style={{ marginTop: 10 }}>
+                {activeExplore.mandiWebEmptyBoth}
+              </p>
+            )}
+
+            {!marketLoading && !mandiHasFetched && (
+              <p className="ks-inline-note" style={{ marginTop: 10 }}>
+                {activeExplore.marketIdleHint}
+              </p>
+            )}
+
+            {!marketLoading && market.length > 0 && mandiAgmarknetAvailable && (
+              <div
+                style={{
+                  marginTop: 12,
+                  border: "1px solid rgba(127, 255, 106, 0.22)",
+                  borderRadius: 12,
+                  overflow: "auto",
+                  maxHeight: 240,
+                  fontSize: 12,
+                }}
+              >
+                <table style={{ width: "100%", borderCollapse: "collapse", color: "#f0f4ee" }}>
+                  <thead>
+                    <tr style={{ background: "rgba(127, 255, 106, 0.12)" }}>
+                      <th style={{ padding: 8, textAlign: "left" }}>Market</th>
+                      <th style={{ padding: 8, textAlign: "left" }}>Commodity</th>
+                      <th style={{ padding: 8, textAlign: "right", color: "#b9ffab" }}>Modal ₹/q</th>
+                      <th style={{ padding: 8, textAlign: "center" }}>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {market.map((item, idx) => {
+                      const fmt = (n) =>
+                        Number.isFinite(Number(n)) ? Number(n).toLocaleString("en-IN") : "—";
+                      return (
+                        <tr
+                          key={`${item.market}-${item.commodity}-${idx}`}
+                          style={{ borderTop: "1px solid rgba(127,255,106,0.12)" }}
+                        >
+                          <td style={{ padding: 8 }}>{item.market || "—"}</td>
+                          <td style={{ padding: 8 }}>{item.commodity || "—"}</td>
+                          <td style={{ padding: 8, textAlign: "right", fontWeight: 700, color: "#c8ffc0" }}>
+                            ₹{fmt(item.modalPrice)}
+                          </td>
+                          <td style={{ padding: 8, textAlign: "center", opacity: 0.85 }}>{item.date || "—"}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </article>
         </section>
 
@@ -4000,7 +4448,7 @@ if (showFeatureHub) {
             )}
           </section>
 
-          {/* Market Prices Card */}
+          {/* Market Prices — Agmarknet mandi rates */}
       
 <section
   style={{
@@ -4009,9 +4457,9 @@ if (showFeatureHub) {
     borderRadius: 12,
     boxShadow: COLORS.cardShadow,
     padding: "18px 14px",
-    minWidth: 300,
-    maxWidth: 360,
-    flex: "1 1 300px",
+    minWidth: 320,
+    maxWidth: 960,
+    flex: "1 1 360px",
     marginBottom: 16,
     display: "flex",
     flexDirection: "column",
@@ -4019,15 +4467,14 @@ if (showFeatureHub) {
     animation: "cardEntrance 0.9s cubic-bezier(.5,1.5,.5,1)",
   }}
 >
-  {/* Live Flag */}
   <div
     style={{
       position: "absolute",
       top: 12,
       left: 12,
-      background: "#ff5722",
+      background: "#2e7d32",
       color: "#fff",
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: 600,
       padding: "2px 8px",
       borderRadius: 6,
@@ -4035,7 +4482,7 @@ if (showFeatureHub) {
       textTransform: "uppercase",
     }}
   >
-    Live
+    Agmarknet
   </div>
 
   <h2 style={cardTitle}>
@@ -4207,44 +4654,117 @@ if (showFeatureHub) {
     </div>
   )}
 
-  {/* State Filter */}
-  <div style={{ width: "100%", marginBottom: 8 }}>
+  {/* Filters: state, district scope, optional district name, commodity, fetch */}
+  <div
+    style={{
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 8,
+      width: "100%",
+      marginBottom: 8,
+      alignItems: "stretch",
+    }}
+  >
     <select
-      value={selectedState}
-      onChange={(e) => setSelectedState(e.target.value)}
+      value={mandiState}
+      onChange={(e) => setMandiState(e.target.value)}
       style={{
-        width: "100%",
+        flex: "1 1 140px",
+        minWidth: 120,
         padding: "8px 10px",
         borderRadius: 6,
         border: `1px solid ${COLORS.border}`,
         fontSize: 13,
         background: COLORS.inputBg,
+        color: COLORS.text,
       }}
     >
-      <option value="PUNJAB">Punjab</option>
-      <option value="HARYANA">Haryana</option>
-      <option value="JAMMU-AND-KASHMIR">Jammu & Kashmir</option>
-      <option value="UTTAR-PRADESH">Uttar Pradesh</option>
-      <option value="MADHYA-PRADESH">Madhya Pradesh</option>
-      <option value="MAHARASHTRA">Maharashtra</option>
-      <option value="GUJARAT">Gujarat</option>
-      <option value="RAJASTHAN">Rajasthan</option>
-      <option value="KARNATAKA">Karnataka</option>
-      <option value="TAMIL-NADU">Tamil Nadu</option>
-      <option value="ANDHRA-PRADESH">Andhra Pradesh</option>
-      <option value="TELANGANA">Telangana</option>
-      <option value="WEST-BENGAL">West Bengal</option>
-      <option value="BIHAR">Bihar</option>
+      <option value={MANDI_ALL}>All states</option>
+      {MANDI_RATE_STATES.map((s) => (
+        <option key={s} value={s}>
+          {s}
+        </option>
+      ))}
     </select>
+    <select
+      value={mandiDistrictScope}
+      onChange={(e) => setMandiDistrictScope(e.target.value)}
+      style={{
+        flex: "1 1 140px",
+        minWidth: 120,
+        padding: "8px 10px",
+        borderRadius: 6,
+        border: `1px solid ${COLORS.border}`,
+        fontSize: 13,
+        background: COLORS.inputBg,
+        color: COLORS.text,
+      }}
+    >
+      <option value={MANDI_ALL}>All districts</option>
+      <option value={MANDI_DISTRICT_SPECIFIC}>One district</option>
+    </select>
+    {mandiDistrictScope === MANDI_DISTRICT_SPECIFIC && (
+      <input
+        type="text"
+        placeholder="District name"
+        value={mandiDistrict}
+        onChange={(e) => setMandiDistrict(e.target.value)}
+        style={{
+          flex: "1 1 140px",
+          minWidth: 120,
+          padding: "8px 10px",
+          borderRadius: 6,
+          border: `1px solid ${COLORS.border}`,
+          fontSize: 13,
+          background: COLORS.inputBg,
+          color: COLORS.text,
+          boxSizing: "border-box",
+        }}
+      />
+    )}
+    <select
+      value={mandiCommodity}
+      onChange={(e) => setMandiCommodity(e.target.value)}
+      style={{
+        flex: "1 1 140px",
+        minWidth: 120,
+        padding: "8px 10px",
+        borderRadius: 6,
+        border: `1px solid ${COLORS.border}`,
+        fontSize: 13,
+        background: COLORS.inputBg,
+        color: COLORS.text,
+      }}
+    >
+      <option value="">All commodities</option>
+      {MANDI_RATE_COMMODITIES.map((c) => (
+        <option key={c} value={c}>
+          {c}
+        </option>
+      ))}
+    </select>
+    <button
+      type="button"
+      style={{ ...buttonStyle, flex: "1 1 120px", padding: "8px 10px", fontSize: 12 }}
+      onClick={() => fetchMarket(false)}
+      disabled={marketLoading}
+    >
+      {marketLoading ? "⏳ Loading..." : "Fetch Rates"}
+    </button>
   </div>
 
-  {/* Search */}
+  {(mandiState === MANDI_ALL || mandiDistrictScope === MANDI_ALL) && (
+    <p style={{ width: "100%", fontSize: 11, color: "#888", margin: "0 0 8px" }}>
+      Large nationwide query — data loads in pages. Use Load more for additional rows.
+    </p>
+  )}
+
   <div style={{ width: "100%", marginBottom: 8 }}>
     <input
       type="text"
-      placeholder="🔍 Search crop or mandi..."
-      value={marketSearch}
-      onChange={(e) => setMarketSearch(e.target.value)}
+      placeholder="Arrival date (optional, dd-MM-yyyy)"
+      value={mandiDate}
+      onChange={(e) => setMandiDate(e.target.value)}
       style={{
         width: "100%",
         padding: "8px 10px",
@@ -4252,276 +4772,352 @@ if (showFeatureHub) {
         border: `1px solid ${COLORS.border}`,
         fontSize: 13,
         background: COLORS.inputBg,
+        color: COLORS.text,
         boxSizing: "border-box",
       }}
     />
   </div>
 
-  <div style={{ display: "flex", gap: 6, width: "100%", marginBottom: 10 }}>
-    <button
-      style={{ ...buttonStyle, flex: 1, padding: "8px 6px", fontSize: 12 }}
-      onClick={fetchMarket}
-      disabled={marketLoading}
-    >
-      {marketLoading ? "⏳ Loading..." : "📊 Get Prices"}
-    </button>
-    <button
-      style={{ 
-        ...buttonStyle, 
-        flex: 1, 
-        padding: "8px 6px", 
-        fontSize: 12,
-        background: "#1976d2",
-      }}
-      onClick={() => window.open(`https://www.kisandeals.com/mandiprices/district/ALL/${selectedState}/ALL`, "_blank")}
-    >
-      🌐 KisanDeals
-    </button>
-  </div>
-
-  {/* Error Message */}
   {marketError && (
-    <div style={{ 
-      background: "#ffebee", 
-      color: "#c62828", 
-      padding: "8px 10px", 
-      borderRadius: 6, 
-      fontSize: 12,
-      marginBottom: 8,
-      width: "100%",
-      boxSizing: "border-box",
-    }}>
+    <div
+      style={{
+        background: "#ffebee",
+        color: "#c62828",
+        padding: "8px 10px",
+        borderRadius: 6,
+        fontSize: 12,
+        marginBottom: 8,
+        width: "100%",
+        boxSizing: "border-box",
+      }}
+    >
       {marketError}
     </div>
   )}
 
-  {/* Price List */}
-  <div style={{ 
-    width: "100%", 
-    background: "#fafafa",
-    borderRadius: 8,
-    padding: 8,
-  }}>
-    {filteredMarket.length === 0 && !marketLoading && (
-      <div style={{ textAlign: "center", color: "#888", padding: 16, fontSize: 13 }}>
-        Click "Get Prices" to load market data
-      </div>
-    )}
-    
-    {filteredMarket.map((item, idx) => (
-      <div 
-        key={idx} 
-        style={{ 
-          background: "#fff",
-          borderRadius: 8,
-          padding: "10px 12px",
-          marginBottom: 8,
-          border: item.isLive ? "1px solid #4caf50" : "1px solid #e8e8e8",
-          boxShadow: item.isLive ? "0 1px 6px rgba(76,175,80,0.15)" : "0 1px 3px rgba(0,0,0,0.05)",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 20 }}>{item.icon || "🌾"}</span>
-            <div>
-              <div style={{ fontWeight: 600, color: COLORS.text, fontSize: 14, display: "flex", alignItems: "center", gap: 6 }}>
-                {item.commodity}
-                {item.isLive && (
-                  <span 
-                    className="live-badge"
-                    style={{ 
-                      background: "#4caf50", 
-                      color: "#fff", 
-                      fontSize: 8, 
-                      padding: "2px 5px", 
-                      borderRadius: 4,
-                      fontWeight: 700,
-                    }}
-                  >
-                    LIVE
-                  </span>
-                )}
-              </div>
-              <div style={{ fontSize: 11, color: "#888" }}>
-                📍 {item.mandi}{item.district ? `, ${item.district}` : ""}{item.state ? `, ${item.state}` : ""}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => toggleFavorite(item.commodity)}
+  {mandiWebSearchError && (
+    <div
+      style={{
+        background: "#ffebee",
+        color: "#c62828",
+        padding: "8px 10px",
+        borderRadius: 6,
+        fontSize: 12,
+        marginBottom: 8,
+        width: "100%",
+        boxSizing: "border-box",
+      }}
+    >
+      {mandiWebSearchError}
+    </div>
+  )}
+
+  {mandiWebResults.length > 0 && (
+    <div
+      style={{
+        background: "#fff8e1",
+        border: "1px solid #ffcc80",
+        color: "#e65100",
+        padding: "10px 12px",
+        borderRadius: 8,
+        fontSize: 12,
+        marginBottom: 10,
+        width: "100%",
+        boxSizing: "border-box",
+      }}
+    >
+      ⚠️ No data available on Agmarknet for{" "}
+      <strong>{mandiCommodity || "all commodities"}</strong> in{" "}
+      <strong>
+        {mandiDistrictScope === MANDI_ALL ? "all districts" : mandiDistrict || "—"}
+      </strong>
+      , <strong>{mandiState === MANDI_ALL ? "all states" : mandiState}</strong>. Showing live web
+      results instead.
+    </div>
+  )}
+
+  {mandiWebResults.length > 0 && (
+    <div
+      style={{
+        width: "100%",
+        marginBottom: 12,
+        padding: "12px 10px",
+        borderRadius: 10,
+        background: "#f0f7ff",
+        border: "1px solid #90caf9",
+        boxSizing: "border-box",
+      }}
+    >
+      <p style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700, color: "#1565c0" }}>
+        🌐 Live Web Results
+      </p>
+      <p style={{ margin: "0 0 10px", fontSize: 11, color: "#546e7a" }}>
+        Sourced via Exa — verify before acting on prices
+      </p>
+      {mandiWebResults.map((w, idx) => (
+        <div
+          key={`${w.url}-${idx}`}
+          style={{
+            background: "#fff",
+            borderRadius: 8,
+            padding: "10px 12px",
+            marginBottom: 8,
+            border: "1px solid #bbdefb",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+          }}
+        >
+          <a
+            href={w.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontWeight: 600, color: COLORS.primaryDark, fontSize: 13 }}
+          >
+            {w.title}
+          </a>
+          <div
             style={{
-              background: "transparent",
-              border: "none",
-              fontSize: 18,
-              cursor: "pointer",
-              padding: 4,
+              marginTop: 6,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              alignItems: "center",
+              fontSize: 10,
             }}
           >
-            {favoriteItems.includes(item.commodity) ? "⭐" : "☆"}
-          </button>
-        </div>
-        
-        {/* Price Range Bar */}
-        {item.minPrice && item.maxPrice && (
-          <div style={{ 
-            margin: "8px 0 4px 0",
-            background: "#f5f5f5",
-            borderRadius: 6,
-            padding: "6px 8px",
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#666", marginBottom: 4 }}>
-              <span>Min: ₹{item.minPrice?.toLocaleString()}</span>
-              <span style={{ fontWeight: 600, color: COLORS.primaryDark }}>Modal: ₹{item.modalPrice?.toLocaleString()}</span>
-              <span>Max: ₹{item.maxPrice?.toLocaleString()}</span>
-            </div>
-            <div style={{ 
-              height: 6, 
-              background: "linear-gradient(90deg, #ffcdd2, #fff9c4, #c8e6c9)", 
-              borderRadius: 3,
-              position: "relative",
-            }}>
-              {/* Modal price indicator */}
-              <div style={{
-                position: "absolute",
-                left: `${Math.min(95, Math.max(5, ((item.modalPrice - item.minPrice) / (item.maxPrice - item.minPrice)) * 100))}%`,
-                top: -4,
-                width: 12,
-                height: 12,
-                background: COLORS.primary,
-                borderRadius: "50%",
-                border: "2px solid #fff",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                transform: "translateX(-50%)",
-              }} />
-            </div>
-          </div>
-        )}
-        
-        <div style={{ 
-          display: "flex", 
-          justifyContent: "space-between", 
-          alignItems: "center",
-          marginTop: 8,
-          paddingTop: 8,
-          borderTop: "1px dashed #eee",
-        }}>
-          <div style={{ 
-            fontSize: 16, 
-            fontWeight: 700, 
-            color: COLORS.primaryDark,
-          }}>
-            ₹{item.modalPrice?.toLocaleString()}/{item.unit}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {item.arrivalDate && (
-              <span style={{ fontSize: 9, color: "#999" }}>
-                📅 {item.arrivalDate}
+            {w.source ? (
+              <span
+                style={{
+                  background: "#e3f2fd",
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  color: "#1565c0",
+                  fontWeight: 600,
+                }}
+              >
+                {w.source}
               </span>
-            )}
-            <div style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              gap: 4,
-              background: item.trend === "up" ? "#e8f5e9" : item.trend === "down" ? "#ffebee" : "#f5f5f5",
-              padding: "3px 8px",
-              borderRadius: 12,
-              fontSize: 11,
-              fontWeight: 600,
-              color: item.trend === "up" ? "#2e7d32" : item.trend === "down" ? "#c62828" : "#666",
-            }}>
-              {item.trend === "up" ? "📈" : item.trend === "down" ? "📉" : "➡️"}
-              {item.changePercent > 0 ? "+" : ""}{item.changePercent}%
-            </div>
+            ) : null}
+            {w.publishedDate ? (
+              <span style={{ color: "#78909c" }}>{w.publishedDate}</span>
+            ) : null}
           </div>
+          {w.summary ? (
+            <p style={{ margin: "8px 0 0", fontSize: 12, color: "#37474f", lineHeight: 1.45 }}>
+              {w.summary}
+            </p>
+          ) : null}
         </div>
-        
-        {item.msp && (
-          <div style={{ 
-            fontSize: 10, 
-            color: "#666", 
-            marginTop: 4,
-            display: "flex",
-            justifyContent: "space-between",
-          }}>
-            <span>MSP: ₹{item.msp}</span>
-            <span style={{ 
-              color: item.modalPrice >= item.msp ? "#2e7d32" : "#c62828",
-              fontWeight: 500,
-            }}>
-              {item.modalPrice >= item.msp ? "✓ Above MSP" : "⚠ Below MSP"}
-            </span>
-          </div>
+      ))}
+    </div>
+  )}
+
+  {mandiHasFetched && market.length > 0 && mandiAgmarknetAvailable && (
+    <div
+      style={{
+        width: "100%",
+        fontSize: 12,
+        color: "#555",
+        marginBottom: 6,
+        fontWeight: 600,
+      }}
+    >
+      Showing {market.length} of {marketTotal} results
+      {market.length !== marketTotal ? " (more available via Load More)" : ""}
+    </div>
+  )}
+
+  <div
+    style={{
+      width: "100%",
+      maxHeight: 360,
+      overflow: "auto",
+      background: "#fafafa",
+      borderRadius: 8,
+      padding: 8,
+    }}
+  >
+    {marketLoading && (
+      <div>
+        {mandiSearchingWeb && (
+          <p style={{ textAlign: "center", color: "#666", fontSize: 13, marginBottom: 10 }}>
+            Agmarknet has no data — searching the web for live prices...
+          </p>
         )}
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+          <thead>
+            <tr style={{ background: COLORS.primaryDark, color: "#fff" }}>
+              <th style={{ padding: 8, textAlign: "left" }}>Market</th>
+              <th style={{ padding: 8, textAlign: "left" }}>Commodity</th>
+              <th style={{ padding: 8, textAlign: "left" }}>Variety</th>
+              <th style={{ padding: 8, textAlign: "left" }}>Grade</th>
+              <th style={{ padding: 8, textAlign: "right" }}>Min ₹ / q</th>
+              <th style={{ padding: 8, textAlign: "right" }}>Max ₹ / q</th>
+              <th style={{ padding: 8, textAlign: "right", background: "#1b5e20" }}>
+                Modal ₹ / q
+              </th>
+              <th style={{ padding: 8, textAlign: "center" }}>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[0, 1, 2, 3, 4].map((i) => (
+              <tr key={i}>
+                <td colSpan={8} style={{ padding: 6 }}>
+                  <div className="anim-shimmer" style={{ height: 14, borderRadius: 4 }} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    ))}
+    )}
+
+    {!marketLoading && !mandiHasFetched && (
+      <div style={{ textAlign: "center", color: "#666", padding: 20, fontSize: 13 }}>
+        Choose filters (including All states / All districts) and tap Fetch Rates to load Agmarknet data.
+      </div>
+    )}
+
+    {!marketLoading &&
+      mandiHasFetched &&
+      market.length === 0 &&
+      !marketError &&
+      !mandiWebSearchError &&
+      mandiWebResults.length === 0 &&
+      mandiAgmarknetAvailable && (
+      <div style={{ textAlign: "center", color: "#666", padding: 20, fontSize: 13 }}>
+        No mandi data found for the selected filters. Try a different district or commodity.
+      </div>
+    )}
+
+    {!marketLoading &&
+      mandiHasFetched &&
+      market.length === 0 &&
+      !marketError &&
+      !mandiWebSearchError &&
+      mandiWebResults.length === 0 &&
+      !mandiAgmarknetAvailable && (
+      <div style={{ textAlign: "center", color: "#666", padding: 20, fontSize: 13 }}>
+        ⚠️ No Agmarknet data found. ❌ Web search also returned no results. Try agmarknet.gov.in or
+        krishijagran.com manually.
+      </div>
+    )}
+
+    {!marketLoading && market.length > 0 && mandiAgmarknetAvailable && (
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", minWidth: 640, borderCollapse: "collapse", fontSize: 12 }}>
+          <thead>
+            <tr style={{ background: COLORS.primary, color: "#fff" }}>
+              <th style={{ padding: 10, textAlign: "left", borderRadius: "8px 0 0 0" }}>Market</th>
+              <th style={{ padding: 10, textAlign: "left" }}>Commodity</th>
+              <th style={{ padding: 10, textAlign: "left" }}>Variety</th>
+              <th style={{ padding: 10, textAlign: "left" }}>Grade</th>
+              <th style={{ padding: 10, textAlign: "right" }}>Min Price (₹ / q)</th>
+              <th style={{ padding: 10, textAlign: "right" }}>Max Price (₹ / q)</th>
+              <th
+                style={{
+                  padding: 10,
+                  textAlign: "right",
+                  background: "#2e7d32",
+                  borderRadius: "0 0 0 0",
+                  fontWeight: 700,
+                }}
+              >
+                Modal Price (₹ / q)
+              </th>
+              <th style={{ padding: 10, textAlign: "center", borderRadius: "0 8px 0 0" }}>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {market.map((item, idx) => {
+              const fmt = (n) =>
+                Number.isFinite(Number(n)) ? Number(n).toLocaleString("en-IN") : "—";
+              return (
+                <tr
+                  key={`${item.market}-${item.commodity}-${idx}`}
+                  style={{
+                    background: idx % 2 === 0 ? "#fff" : "#f9f9f9",
+                    borderBottom: "1px solid #eee",
+                  }}
+                >
+                  <td style={{ padding: 8, color: "#333" }}>{item.market || "—"}</td>
+                  <td style={{ padding: 8, color: "#333" }}>{item.commodity || "—"}</td>
+                  <td style={{ padding: 8, color: "#333" }}>{item.variety || "—"}</td>
+                  <td style={{ padding: 8, color: "#333" }}>{item.grade || "—"}</td>
+                  <td style={{ padding: 8, textAlign: "right", color: "#333" }}>₹{fmt(item.minPrice)}</td>
+                  <td style={{ padding: 8, textAlign: "right", color: "#333" }}>₹{fmt(item.maxPrice)}</td>
+                  <td
+                    style={{
+                      padding: 8,
+                      textAlign: "right",
+                      fontWeight: 700,
+                      background: "#e8f5e9",
+                      color: "#1b5e20",
+                    }}
+                  >
+                    ₹{fmt(item.modalPrice)}
+                  </td>
+                  <td style={{ padding: 8, textAlign: "center", color: "#555", fontSize: 11 }}>
+                    {item.date || "—"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    )}
   </div>
-  
-  {/* Quick Links */}
-  <div style={{ 
-    marginTop: 10, 
-    display: "flex", 
-    flexWrap: "wrap", 
-    gap: 4,
-    justifyContent: "center",
-  }}>
-    {["WHEAT", "PADDY", "COTTON", "ONION", "TOMATO"].map(crop => (
-      <button
-        key={crop}
-        onClick={() => window.open(`https://www.kisandeals.com/mandiprices/district/${crop}/${selectedState}/ALL`, "_blank")}
+
+  {marketTotal > market.length && market.length > 0 && mandiAgmarknetAvailable && (
+    <button
+      type="button"
+      style={{ ...buttonStyle, marginTop: 10, width: "100%", padding: "10px" }}
+      onClick={() => fetchMarket(true)}
+      disabled={marketLoading}
+    >
+      {marketLoading ? "Loading…" : "Load More"}
+    </button>
+  )}
+
+  <div style={{ marginTop: 10, fontSize: 10, color: "#888", textAlign: "center", lineHeight: 1.4 }}>
+    {marketSource && (
+      <div
         style={{
-          padding: "4px 8px",
-          fontSize: 10,
-          background: COLORS.accent,
-          border: "none",
-          borderRadius: 12,
-          color: COLORS.text,
-          cursor: "pointer",
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          marginBottom: 6,
         }}
       >
-        {crop.charAt(0) + crop.slice(1).toLowerCase()}
-      </button>
-    ))}
-  </div>
-  
-  {/* View on KisanDeals */}
-  <div style={{ marginTop: 8, fontSize: 10, color: "#666", textAlign: "center" }}>
-    {marketSource && (
-      <div style={{ 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "center", 
-        gap: 6,
-        marginBottom: 4,
-      }}>
-        <span style={{ 
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 4,
-          background: marketSource.includes("KisanDeals") ? "#e8f5e9" : "#fff3e0",
-          padding: "3px 8px",
-          borderRadius: 10,
-          fontSize: 9,
-          fontWeight: 600,
-          color: marketSource.includes("KisanDeals") ? "#2e7d32" : "#e65100",
-        }}>
-          {marketSource.includes("KisanDeals") ? "🟢" : "🟡"} {marketSource}
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            background: "#e8f5e9",
+            padding: "3px 8px",
+            borderRadius: 10,
+            fontSize: 9,
+            fontWeight: 600,
+            color: "#2e7d32",
+          }}
+        >
+          🟢 {marketSource}
         </span>
         {marketLastUpdated && (
           <span style={{ fontSize: 9, color: "#999" }}>
-            Updated: {new Date(marketLastUpdated).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+            Updated:{" "}
+            {new Date(marketLastUpdated).toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </span>
         )}
       </div>
     )}
-    <span>View more: </span>
-    <a 
-      href={`https://www.kisandeals.com/mandiprices/district/ALL/${selectedState}/ALL`}
-      target="_blank" 
-      rel="noopener noreferrer"
-      style={{ color: COLORS.primary, textDecoration: "underline" }}
-    >
-      KisanDeals.com
-    </a>
+    Data sourced from Agmarknet via data.gov.in — Ministry of Agriculture and Farmers Welfare
   </div>
 </section> 
 {/* Vendor Verse Card */}
