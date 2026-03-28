@@ -11,6 +11,7 @@ import User from "./models/User.js";
 import PriceAlert from "./models/PriceAlert.js";
 import PlantDetection from "./models/PlantDetection.js";
 import plantDetectionRouter from "./routes/plantDetection.js";
+import cropDiseaseRouter from "./routes/cropDisease.js";
 
 //connect to MongoDB
 dotenv.config();
@@ -715,6 +716,7 @@ app.get("/api/kisandeals-links", (req, res) => {
 
 // Plant Detection Routes
 app.use("/api/plant-detection", plantDetectionRouter);
+app.use("/api", cropDiseaseRouter);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
@@ -725,6 +727,7 @@ app.listen(port, () => {
   console.log(`   GET  http://localhost:${port}/api/weather`);
   console.log(`   POST http://localhost:${port}/api/plant-detection/detect`);
   console.log(`   GET  http://localhost:${port}/api/plant-detection/history/:userId`);
+  console.log(`   POST http://localhost:${port}/api/detect-disease`);
   console.log(`📝 Endpoints:`);
   console.log(`   POST http://localhost:${port}/generate-text`);
   console.log(`   GET  http://localhost:${port}/api/market-prices`);

@@ -290,55 +290,45 @@ function App() {
   const [diseaseResult, setDiseaseResult] = useState(null);
   const [diseaseLoading, setDiseaseLoading] = useState(false);
 
-  // AI detection handler - calls real backend API
+  // AI detection handler — HF disease model (no login / userId required)
   const handleDiseaseImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setDiseaseImage(file);
     setDiseaseLoading(true);
-    
+
     try {
       const formData = new FormData();
       formData.append("image", file);
-      
-      const response = await axios.post(`${API_URL}/api/plant-detection/detect`, formData, {
+      formData.append("language", language || "en");
+
+      const response = await axios.post(`${API_URL}/api/detect-disease`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      if (response.data.success) {
-        const detection = response.data.detection;
-        
-        // Determine if it's a valid plant image
-        const isValidPlant = detection.analysisData?.isPlantImage !== false;
-        
-        // Set appropriate status and color based on plant validity and health
-        let status = "Analysis Complete";
+      if (response.data.success && response.data.disease) {
+        const d = response.data.disease;
+        const loc = response.data.localized;
+        const topCond = loc?.topCondition || d.diseaseName;
+        let status = "Analysis complete";
         let color = "#388e3c";
-        let message = "Analysis completed successfully";
-        
-        if (!isValidPlant) {
-          status = "⚠️ Invalid Image";
-          color = "#ff6f00";
-          message = detection.analysisData?.validationMessage || "This does not appear to be a crop/plant image";
-        } else if (detection.health_status === "Healthy") {
-          status = "✅ Healthy";
+        let message = `${topCond} (${d.confidencePercent}% confidence)`;
+
+        if (d.isHealthy) {
+          status = "✅ Likely healthy";
           color = "#388e3c";
-          message = "No disease or pest detected";
-        } else if (detection.health_status?.includes("Disease")) {
-          status = "🔴 Disease Detected";
+          message = `${topCond} (${d.confidencePercent}% confidence)`;
+        } else {
+          status = "⚕️ Top prediction";
           color = "#d32f2f";
-          message = detection.description || "Disease detected in crop";
-        } else if (detection.health_status?.includes("Pest")) {
-          status = "🟡 Pest Detected";
-          color = "#fbc02d";
-          message = detection.description || "Pest infestation detected";
+          message = `${topCond} — ${d.confidencePercent}% confidence`;
         }
-        
+
         setDiseaseResult({
           status,
           color,
           message,
-          details: detection.analysisData || detection,
+          details: { ...d, localized: loc || null },
         });
       } else {
         setDiseaseResult({
@@ -1270,55 +1260,53 @@ const filteredMarket = market.filter(item =>
           🌱 Krishi Saarthi
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          {/* Plant Detection Navigation */}
+          {/* Plant / disease detection: available without login; history only when signed in */}
+          <button
+            onClick={() => setCurrentView("home")}
+            style={{
+              background: currentView === "home" ? COLORS.primaryDark : "transparent",
+              color: COLORS.buttonText,
+              border: "none",
+              padding: "6px 12px",
+              borderRadius: 6,
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            💬 Home
+          </button>
+          <button
+            onClick={() => setCurrentView("detection")}
+            style={{
+              background: currentView === "detection" ? COLORS.primaryDark : "transparent",
+              color: COLORS.buttonText,
+              border: "none",
+              padding: "6px 12px",
+              borderRadius: 6,
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            🌱 Disease Detection
+          </button>
           {userId && (
-            <>
-              <button
-                onClick={() => setCurrentView("home")}
-                style={{
-                  background: currentView === "home" ? COLORS.primaryDark : "transparent",
-                  color: COLORS.buttonText,
-                  border: "none",
-                  padding: "6px 12px",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  fontSize: 14,
-                  fontWeight: 600,
-                }}
-              >
-                💬 Home
-              </button>
-              <button
-                onClick={() => setCurrentView("detection")}
-                style={{
-                  background: currentView === "detection" ? COLORS.primaryDark : "transparent",
-                  color: COLORS.buttonText,
-                  border: "none",
-                  padding: "6px 12px",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  fontSize: 14,
-                  fontWeight: 600,
-                }}
-              >
-                🌱 Plant Detection
-              </button>
-              <button
-                onClick={() => setCurrentView("history")}
-                style={{
-                  background: currentView === "history" ? COLORS.primaryDark : "transparent",
-                  color: COLORS.buttonText,
-                  border: "none",
-                  padding: "6px 12px",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  fontSize: 14,
-                  fontWeight: 600,
-                }}
-              >
-                📋 History
-              </button>
-            </>
+            <button
+              onClick={() => setCurrentView("history")}
+              style={{
+                background: currentView === "history" ? COLORS.primaryDark : "transparent",
+                color: COLORS.buttonText,
+                border: "none",
+                padding: "6px 12px",
+                borderRadius: 6,
+                cursor: "pointer",
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              📋 History
+            </button>
           )}
           {/* Bell Icon for Notification */}
           <button
@@ -1390,6 +1378,7 @@ const filteredMarket = market.filter(item =>
             <option value="pa">ਗੁਰਮੁਖੀ</option>
             <option value="en">English</option>
             <option value="hi">हिन्दी</option>
+            <option value="ur">اردو</option>
             <option value="ta">தமிழ்</option>
           </select>
         </div>
@@ -1607,7 +1596,6 @@ const filteredMarket = market.filter(item =>
                   border: diseaseResult.details?.isPlantImage === false ? "2px solid #ff6f00" : "none",
                 }}
               >
-                {/* Validation Warning - Show if not a plant image */}
                 {diseaseResult.details?.isPlantImage === false && (
                   <div style={{ marginBottom: 10, padding: 8, background: "#ffeaa7", borderRadius: 6 }}>
                     <b style={{ color: "#ff6f00" }}>⚠️ Image Validation Alert</b>
@@ -1616,15 +1604,62 @@ const filteredMarket = market.filter(item =>
                     </p>
                   </div>
                 )}
-                
-                {/* Main Status */}
+
                 <b style={{ color: diseaseResult.color }}>
                   {diseaseResult.status}
                 </b>
                 <p style={{ margin: "6px 0 0 0" }}>{diseaseResult.message}</p>
-                
-                {/* Additional Details if available */}
-                {diseaseResult.details?.detectedPlant && (
+
+                {diseaseResult.details?.localized?.summary && (
+                  <div
+                    style={{
+                      marginTop: 10,
+                      padding: 10,
+                      background: "#e8f5e9",
+                      borderRadius: 6,
+                      fontSize: 13,
+                      lineHeight: 1.5,
+                      color: COLORS.text,
+                    }}
+                  >
+                    <b style={{ display: "block", marginBottom: 6 }}>Summary</b>
+                    {diseaseResult.details.localized.summary}
+                  </div>
+                )}
+
+                {diseaseResult.details?.predictions && (
+                  <div style={{ marginTop: 10, fontSize: 12, color: COLORS.text }}>
+                    {diseaseResult.details.localized?.topCrop != null && diseaseResult.details.localized.topCrop !== "" ? (
+                      <p style={{ margin: "4px 0" }}>
+                        <b>Crop / plant:</b> {diseaseResult.details.localized.topCrop}
+                      </p>
+                    ) : (
+                      diseaseResult.details.plant && (
+                        <p style={{ margin: "4px 0" }}>
+                          <b>Crop / plant:</b> {diseaseResult.details.plant}
+                        </p>
+                      )
+                    )}
+                    <p style={{ margin: "4px 0", wordBreak: "break-word" }}>
+                      <b>Model label:</b> {diseaseResult.details.name}
+                    </p>
+                    <p style={{ margin: "8px 0 4px 0", fontWeight: 600 }}>All scores</p>
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>
+                      {(diseaseResult.details.localized?.predictions?.length > 0
+                        ? diseaseResult.details.localized.predictions
+                        : diseaseResult.details.predictions
+                      )
+                        .slice(0, 5)
+                        .map((p, i) => (
+                          <li key={i} style={{ margin: "2px 0" }}>
+                            {p.label}: {p.confidencePercent ?? Math.round(p.score * 1000) / 10}%
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
+
+                {diseaseResult.details?.detectedPlant && !diseaseResult.details?.predictions && (
                   <div style={{ marginTop: 8, fontSize: 12, color: COLORS.text }}>
                     <p style={{ margin: "4px 0" }}>
                       <b>Detected Plant:</b> {diseaseResult.details.detectedPlant.name} ({diseaseResult.details.detectedPlant.confidence}% confident)
@@ -3157,12 +3192,16 @@ const filteredMarket = market.filter(item =>
         </div>
       </div>
       </>
-      ) : currentView === "detection" && userId ? (
-        <PlantImageDetection 
-          userId={userId} 
+      ) : currentView === "detection" ? (
+        <PlantImageDetection
+          userId={userId}
           language={language}
-          onDetectionComplete={(detection) => {
-            showNotification("✅ Plant detection completed! Check history to view results.", "success");
+          onDetectionComplete={() => {
+            if (userId) {
+              showNotification("✅ Disease detection completed! Check history to view saved results.", "success");
+            } else {
+              showNotification("✅ Disease detection completed.", "success");
+            }
           }}
         />
       ) : currentView === "history" && userId ? (
