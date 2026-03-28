@@ -4936,12 +4936,13 @@ if (typeof window !== "undefined" && !window.__agrinext_btn_anim) {
   const style = document.createElement("style");
   style.innerHTML = `
     button, input[type="button"], input[type="submit"] {
-      transition: background 0.2s, box-shadow 0.2s, transform 0.13s, scale 0.13s;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s, border-color 0.2s;
     }
-    button:hover, button:focus, input[type="button"]:hover, input[type="button"]:focus, input[type="submit"]:hover, input[type="submit"]:focus {
-      background: #92ff82 !important;
-      box-shadow: 0 8px 26px rgba(127,255,106,0.26) !important;
-      transform: scale(1.03) !important;
+    /* Only style buttons without defined classes — respect CSS class definitions */
+    button:not([class]):hover, button:not([class]):focus {
+      background: rgba(127, 255, 106, 0.15);
+      box-shadow: 0 4px 12px rgba(127, 255, 106, 0.1);
+      transform: translateY(-1px);
     }
     input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus {
       box-shadow: 0 0 0 4px rgba(127,255,106,0.2) !important;
