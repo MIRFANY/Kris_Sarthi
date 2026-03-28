@@ -12,7 +12,7 @@ import PlantDetection from "./models/PlantDetection.js";
 import plantDetectionRouter from "./routes/plantDetection.js";
 import cropDiseaseRouter from "./routes/cropDisease.js";
 import Exa from "exa-js";
-import { getMandiRates } from "./services/mandiRatesService.js";
+import { getMandiRates, getMandiPriceTrend } from "./services/mandiRatesService.js";
 import { searchMandiWebResults } from "./src/services/exaSearchService.js";
 
 //connect to MongoDB
@@ -433,6 +433,41 @@ app.get("/api/market-prices", async (req, res) => {
   }
 });
 
+// Mandi rates — 7-day price trend (Agmarknet)
+app.get("/api/mandi-rates/trend", async (req, res) => {
+  try {
+    const stateRaw = req.query.state;
+    const districtRaw = req.query.district;
+    const commodityRaw = req.query.commodity;
+
+    const state =
+      stateRaw === undefined || stateRaw === null
+        ? "all"
+        : String(stateRaw).trim() || "all";
+    const district =
+      districtRaw === undefined || districtRaw === null
+        ? "all"
+        : String(districtRaw).trim() || "all";
+    const commodity =
+      commodityRaw !== undefined && commodityRaw !== null
+        ? String(commodityRaw).trim()
+        : "";
+
+    if (!commodity) {
+      return res.status(400).json({ error: "commodity is required" });
+    }
+
+    const payload = await getMandiPriceTrend({ state, district, commodity });
+    return res.json({
+      success: true,
+      ...payload,
+    });
+  } catch (err) {
+    console.error("Mandi price trend error:", err.message);
+    res.status(500).json({ error: err.message || "Failed to fetch mandi price trend" });
+  }
+});
+
 // Mandi rates from Agmarknet (data.gov.in)
 // Use state=all and/or district=all (or omit) to skip those filters and query the full dataset (paginated).
 // exaFallback=false → Agmarknet only (for two-step UI). Omit or true → run Exa when Agmarknet returns no rows (offset 0 only).
@@ -677,6 +712,7 @@ app.listen(port, () => {
   console.log(`   POST http://localhost:${port}/generate-text`);
   console.log(`   GET  http://localhost:${port}/api/market-prices`);
   console.log(`   GET  http://localhost:${port}/api/mandi-rates`);
+  console.log(`   GET  http://localhost:${port}/api/mandi-rates/trend`);
   console.log(`   GET  http://localhost:${port}/api/weather`);
   console.log(`   POST http://localhost:${port}/api/plant-detection/detect`);
   console.log(`   GET  http://localhost:${port}/api/plant-detection/history/:userId`);

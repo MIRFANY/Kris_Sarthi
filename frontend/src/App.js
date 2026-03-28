@@ -1,5 +1,15 @@
 import React, { useState } from "react";
 import axios from "axios";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import "./App.css";
 import { injectAnimationStyles } from "./AnimationStyles";
 import ReadPopup from "./ReadPopup";
@@ -822,7 +832,9 @@ function App() {
   const [mandiWebSearchError, setMandiWebSearchError] = useState(null);
   const [mandiNoAgmarknetMessage, setMandiNoAgmarknetMessage] = useState("");
   const [mandiSearchingWeb, setMandiSearchingWeb] = useState(false);
-  
+  const [mandiTrendLoading, setMandiTrendLoading] = useState(false);
+  const [mandiTrendPayload, setMandiTrendPayload] = useState(null);
+
   // Crop Price Tracking State
   const [myCropPrice, setMyCropPrice] = useState(null); // Current price of selected crop
   const [myCropPriceLoading, setMyCropPriceLoading] = useState(false);
@@ -1140,10 +1152,40 @@ const fetchMarket = async (append = false) => {
     setMandiWebResults([]);
     setMandiNoAgmarknetMessage("");
     setMandiSearchingWeb(false);
+    setMandiTrendPayload(null);
+    setMandiTrendLoading(false);
   }
   try {
     const districtParam =
       mandiDistrictScope === MANDI_ALL ? MANDI_ALL : mandiDistrict.trim();
+
+    const loadMandiTrendAfterSuccess = (commodityResolved) => {
+      if (!commodityResolved) {
+        setMandiTrendPayload(null);
+        setMandiTrendLoading(false);
+        return;
+      }
+      setMandiTrendLoading(true);
+      const tp = new URLSearchParams({
+        state: mandiState,
+        district: districtParam,
+        commodity: commodityResolved,
+      });
+      axios
+        .get(`${API_URL}/api/mandi-rates/trend?${tp.toString()}`)
+        .then((r) => {
+          if (r.data?.success && Array.isArray(r.data.trend)) {
+            setMandiTrendPayload({
+              trend: r.data.trend,
+              recommendation: r.data.recommendation,
+            });
+          } else {
+            setMandiTrendPayload(null);
+          }
+        })
+        .catch(() => setMandiTrendPayload(null))
+        .finally(() => setMandiTrendLoading(false));
+    };
 
     const buildSearchParams = (offsetVal, agmarknetOnly) => {
       const p = new URLSearchParams({
@@ -1205,6 +1247,9 @@ const fetchMarket = async (append = false) => {
       setMarketLastUpdated(new Date().toISOString());
       setMandiHasFetched(true);
       setMarketLoading(false);
+      const commodityForTrend =
+        mandiCommodity.trim() || mapped[0]?.commodity || "";
+      loadMandiTrendAfterSuccess(commodityForTrend);
       return;
     }
 
@@ -2245,6 +2290,282 @@ React.useEffect(() => {
   localStorage.setItem("ks-active-screen", showFeatureHub ? "explore" : "landing");
 }, [showFeatureHub]);
 
+  const renderMandiTrendSection = (variant) => {
+    const isExplore = variant === "explore";
+    if (!mandiAgmarknetAvailable || market.length === 0 || !mandiHasFetched) {
+      return null;
+    }
+
+    const commodityLabel =
+      (mandiCommodity && mandiCommodity.trim()) || market[0]?.commodity || "—";
+    const districtTitle =
+      mandiDistrictScope === MANDI_ALL ? "All districts" : mandiDistrict.trim() || "—";
+
+    if (mandiTrendLoading && !mandiTrendPayload) {
+      return (
+        <div
+          style={
+            isExplore
+              ? { marginTop: 14, width: "100%" }
+              : { marginTop: 12, width: "100%" }
+          }
+        >
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="anim-shimmer"
+              style={{
+                height: isExplore ? 12 : 14,
+                borderRadius: 6,
+                marginBottom: 8,
+              }}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    if (
+      !mandiTrendPayload ||
+      !Array.isArray(mandiTrendPayload.trend) ||
+      mandiTrendPayload.trend.length === 0
+    ) {
+      return null;
+    }
+
+    const { trend, recommendation } = mandiTrendPayload;
+    const rec = recommendation || {};
+    const trendKind = rec.trend || "stable";
+    const chartData = trend.map((row) => ({
+      ...row,
+      dateLabel: row.date,
+    }));
+
+    const bestRow = trend.find((t) => t.date === rec.bestDayToSell);
+    const bestModal =
+      bestRow && bestRow.modalPrice != null && Number.isFinite(bestRow.modalPrice)
+        ? bestRow.modalPrice
+        : null;
+
+    const badgeStyle =
+      trendKind === "rising"
+        ? {
+            background: "rgba(46, 125, 50, 0.2)",
+            color: "#a5d6a7",
+            border: "1px solid rgba(76, 175, 80, 0.55)",
+          }
+        : trendKind === "falling"
+          ? {
+              background: "rgba(211, 47, 47, 0.18)",
+              color: "#ffcdd2",
+              border: "1px solid rgba(239, 83, 80, 0.5)",
+            }
+          : {
+              background: "rgba(255, 193, 7, 0.15)",
+              color: "#ffe082",
+              border: "1px solid rgba(255, 193, 7, 0.45)",
+            };
+
+    const badgeText =
+      trendKind === "rising"
+        ? "📈 Rising"
+        : trendKind === "falling"
+          ? "📉 Falling"
+          : "➡️ Stable";
+
+    const lineModal = isExplore ? "#b9ffab" : "#2e7d32";
+    const lineMin = isExplore ? "#64b5f6" : "#1565c0";
+    const lineMax = isExplore ? "#ffb74d" : "#ef6c00";
+    const axisColor = isExplore ? "rgba(240,244,238,0.55)" : "#666";
+    const gridColor = isExplore ? "rgba(127,255,106,0.12)" : "#e0e0e0";
+
+    const wrapStyle = isExplore
+      ? {
+          marginTop: 14,
+          width: "100%",
+          padding: "14px 12px",
+          borderRadius: 12,
+          border: "1px solid rgba(127, 255, 106, 0.22)",
+          background: "rgba(0,0,0,0.2)",
+          boxSizing: "border-box",
+        }
+      : {
+          marginTop: 12,
+          width: "100%",
+          padding: "12px 10px",
+          borderRadius: 10,
+          border: `1px solid ${COLORS.border}`,
+          background: "#fafafa",
+          boxSizing: "border-box",
+        };
+
+    return (
+      <div style={wrapStyle}>
+        <p
+          style={{
+            margin: "0 0 10px",
+            fontSize: isExplore ? 15 : 14,
+            fontWeight: 700,
+            color: isExplore ? "#f0f4ee" : "#333",
+          }}
+        >
+          7-Day Price Trend — {commodityLabel} in {districtTitle}
+        </p>
+        <div style={{ width: "100%", height: 260 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+              <XAxis
+                dataKey="dateLabel"
+                tick={{ fontSize: 10, fill: axisColor }}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                tick={{ fontSize: 10, fill: axisColor }}
+                label={{
+                  value: "₹ / quintal",
+                  angle: -90,
+                  position: "insideLeft",
+                  style: { fill: axisColor, fontSize: 10 },
+                }}
+              />
+              <Tooltip
+                contentStyle={
+                  isExplore
+                    ? {
+                        background: "#1a1f1a",
+                        border: "1px solid rgba(127,255,106,0.35)",
+                        borderRadius: 8,
+                        fontSize: 12,
+                        color: "#f0f4ee",
+                      }
+                    : { fontSize: 12 }
+                }
+                formatter={(value, name) =>
+                  value == null || Number.isNaN(Number(value))
+                    ? ["—", name]
+                    : [`₹${Number(value).toLocaleString("en-IN")}`, name]
+                }
+                labelFormatter={(label) => `Date: ${label}`}
+              />
+              <Legend
+                wrapperStyle={{ fontSize: 11, color: isExplore ? "#f0f4ee" : "#555" }}
+              />
+              <Line
+                type="monotone"
+                dataKey="modalPrice"
+                name="Modal Price"
+                stroke={lineModal}
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                connectNulls={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="minPrice"
+                name="Min Price"
+                stroke={lineMin}
+                strokeWidth={2}
+                dot={{ r: 2 }}
+                connectNulls={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="maxPrice"
+                name="Max Price"
+                stroke={lineMax}
+                strokeWidth={2}
+                dot={{ r: 2 }}
+                connectNulls={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div
+          style={
+            isExplore
+              ? {
+                  marginTop: 14,
+                  padding: "12px 12px",
+                  borderRadius: 10,
+                  background: "rgba(127,255,106,0.06)",
+                  border: "1px solid rgba(127,255,106,0.2)",
+                }
+              : {
+                  marginTop: 12,
+                  padding: "12px 10px",
+                  borderRadius: 8,
+                  background: "#fff",
+                  border: "1px solid #e0e0e0",
+                }
+          }
+        >
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "4px 10px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 700,
+                ...badgeStyle,
+              }}
+            >
+              {badgeText}
+            </span>
+          </div>
+          {rec.bestDayToSell && bestModal != null ? (
+            <p
+              style={{
+                margin: "0 0 8px",
+                fontSize: 13,
+                fontWeight: 600,
+                color: isExplore ? "#e8f5e9" : "#1b5e20",
+              }}
+            >
+              Best day in this window: {rec.bestDayToSell} at ₹{bestModal.toLocaleString("en-IN")}
+              /qtl
+            </p>
+          ) : rec.bestDayToSell ? (
+            <p
+              style={{
+                margin: "0 0 8px",
+                fontSize: 12,
+                color: isExplore ? "rgba(240,244,238,0.75)" : "#666",
+              }}
+            >
+              Best day in this window: {rec.bestDayToSell}
+            </p>
+          ) : null}
+          {rec.advice ? (
+            <p
+              style={{
+                margin: "0 0 8px",
+                fontSize: 12,
+                lineHeight: 1.5,
+                color: isExplore ? "rgba(240,244,238,0.9)" : "#444",
+              }}
+            >
+              {rec.advice}
+            </p>
+          ) : null}
+          <p
+            style={{
+              margin: 0,
+              fontSize: 10,
+              lineHeight: 1.45,
+              color: isExplore ? "rgba(240,244,238,0.5)" : "#888",
+            }}
+          >
+            This is based on 7-day historical trend only. Market conditions can change rapidly.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
 if (!showFeatureHub) {
   return (
     <div className="ks-landing">
@@ -2930,6 +3251,43 @@ if (showFeatureHub) {
                 </table>
               </div>
             )}
+            {renderMandiTrendSection("explore")}
+          </article>
+        </section>
+
+        <section className="ks-explore-row ks-explore-row-single">
+          <article className="ks-explore-card ks-explore-card-expand">
+            <span className="ks-feature-tag">Govt</span>
+            <h3>{activeExplore.govtSchemesTitle}</h3>
+            <p>{activeExplore.govtSchemesDesc}</p>
+            <div style={{ width: "100%", marginTop: 12, borderRadius: 12, overflow: "hidden" }}>
+              <GovtSchemes
+                key={`govt-${mandiState}-${selectedCrop}-${language}`}
+                userState={mandiState !== MANDI_ALL ? mandiState : "Punjab"}
+                userCrop={selectedCrop && selectedCrop !== "Select" ? selectedCrop : "Wheat"}
+                userLanguage={
+                  { en: "English", hi: "Hindi", pa: "Punjabi", ta: "Tamil" }[language] || "English"
+                }
+              />
+            </div>
+          </article>
+        </section>
+
+        <section className="ks-explore-row ks-explore-row-single">
+          <article className="ks-explore-card ks-explore-card-expand">
+            <span className="ks-feature-tag">PMFBY</span>
+            <h3>{activeExplore.cropFailureTitle}</h3>
+            <p>{activeExplore.cropFailureDesc}</p>
+            <div style={{ width: "100%", marginTop: 12, borderRadius: 12, overflow: "hidden" }}>
+              <CropInsurance
+                key={`ins-${mandiState}-${selectedCrop}-${language}`}
+                userState={mandiState !== MANDI_ALL ? mandiState : "Punjab"}
+                userCrop={selectedCrop && selectedCrop !== "Select" ? selectedCrop : "Wheat"}
+                userLanguage={
+                  { en: "English", hi: "Hindi", pa: "Punjabi", ta: "Tamil" }[language] || "English"
+                }
+              />
+            </div>
           </article>
         </section>
 
@@ -5068,6 +5426,8 @@ if (showFeatureHub) {
     )}
   </div>
 
+  {renderMandiTrendSection("home")}
+
   {marketTotal > market.length && market.length > 0 && mandiAgmarknetAvailable && (
     <button
       type="button"
@@ -5199,56 +5559,6 @@ if (showFeatureHub) {
               Find agricultural suppliers, equipment dealers, and service
               providers
             </p>
-          </section>
-
-          {/* Govt Schemes Card */}
-          <section
-            style={{
-              background: COLORS.card,
-              borderRadius: 12,
-              boxShadow: COLORS.cardShadow,
-              padding: "18px 14px",
-              minWidth: 220,
-              maxWidth: 900,
-              flex: "1 1 220px",
-              marginBottom: 16,
-              display: "flex",
-              flexDirection: "column",
-              animation: "cardEntrance 0.9s cubic-bezier(.5,1.5,.5,1)",
-            }}
-          >
-            <div style={{ width: "100%", borderRadius: 8, overflow: "hidden" }}>
-              <GovtSchemes
-                userLanguage={
-                  { en: "English", hi: "Hindi", pa: "Punjabi", ta: "Tamil" }[language] || "English"
-                }
-              />
-            </div>
-          </section>
-
-          {/* Crop Insurance Card */}
-          <section
-            style={{
-              background: COLORS.card,
-              borderRadius: 12,
-              boxShadow: COLORS.cardShadow,
-              padding: "18px 14px",
-              minWidth: 220,
-              maxWidth: 900,
-              flex: "1 1 220px",
-              marginBottom: 16,
-              display: "flex",
-              flexDirection: "column",
-              animation: "cardEntrance 0.9s cubic-bezier(.5,1.5,.5,1)",
-            }}
-          >
-            <div style={{ width: "100%", borderRadius: 8, overflow: "hidden" }}>
-              <CropInsurance
-                userLanguage={
-                  { en: "English", hi: "Hindi", pa: "Punjabi", ta: "Tamil" }[language] || "English"
-                }
-              />
-            </div>
           </section>
 
         </div>
