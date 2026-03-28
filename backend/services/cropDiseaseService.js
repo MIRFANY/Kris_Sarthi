@@ -113,6 +113,44 @@ function parseLabel(label) {
 }
 
 /**
+ * Validates if the detected result is actually a plant/crop image.
+ * @param {number} topConfidence Confidence score of top prediction
+ * @param {string} topLabel Top prediction label
+ */
+function validatePlantImage(topConfidence, topLabel) {
+  // Non-plant keywords that indicate off-topic images
+  const NON_PLANT_KEYWORDS = [
+    "person", "human", "dog", "cat", "animal", "car", "bicycle",
+    "house", "building", "sky", "text", "object", "unknown"
+  ];
+  
+  const labelLower = topLabel.toLowerCase();
+  
+  // Check for non-plant keywords
+  for (const keyword of NON_PLANT_KEYWORDS) {
+    if (labelLower.includes(keyword)) {
+      return {
+        isPlantImage: false,
+        validationMessage: `This image appears to contain a ${keyword}, not a crop or plant. Please upload a plant/crop image for accurate analysis.`
+      };
+    }
+  }
+  
+  // Check confidence threshold - very low confidence may indicate off-topic image
+  if (topConfidence < 0.15) {
+    return {
+      isPlantImage: false,
+      validationMessage: "This image does not appear to be a crop or plant. Confidence too low. Please upload a plant/crop image for accurate analysis."
+    };
+  }
+  
+  return {
+    isPlantImage: true,
+    validationMessage: null
+  };
+}
+
+/**
  * Classifies crop/leaf images for plant diseases using the Hugging Face Inference API
  * (image classification). Labels are typically `Crop___Condition` (PlantVillage-style) or
  * similar; scores are softmax confidences in [0, 1].
@@ -125,6 +163,8 @@ function parseLabel(label) {
  *   confidence: number,
  *   confidencePercent: number,
  *   isHealthy: boolean,
+ *   isPlantImage: boolean,
+ *   validationMessage: string | null,
  *   predictions: Array<{ label: string, score: number, confidence: number, confidencePercent: number }>
  * }>}
  */
@@ -157,6 +197,9 @@ export async function detectCropDiseaseFromImageBuffer(imageBuffer) {
     confidencePercent: Math.round(p.score * 1000) / 10,
   }));
 
+  // Validate if the image is actually a plant image
+  const { isPlantImage, validationMessage } = validatePlantImage(top.score, top.label);
+
   return {
     name: top.label,
     plant,
@@ -164,6 +207,8 @@ export async function detectCropDiseaseFromImageBuffer(imageBuffer) {
     confidence: top.score,
     confidencePercent: Math.round(top.score * 1000) / 10,
     isHealthy,
+    isPlantImage,
+    validationMessage,
     predictions,
   };
 }

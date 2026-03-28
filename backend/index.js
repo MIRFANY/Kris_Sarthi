@@ -12,6 +12,7 @@ import PriceAlert from "./models/PriceAlert.js";
 import PlantDetection from "./models/PlantDetection.js";
 import plantDetectionRouter from "./routes/plantDetection.js";
 import cropDiseaseRouter from "./routes/cropDisease.js";
+import Exa from "exa-js";
 
 //connect to MongoDB
 dotenv.config();
@@ -713,6 +714,150 @@ app.get("/api/kisandeals-links", (req, res) => {
     },
   });
 });
+
+
+// Govt Schemes for Farmers using Exa
+app.post("/api/schemes", async (req, res) => {
+  try {
+    const { state, crop, farmSize, language = "English" } = req.body;
+
+    if (!state || !crop) {
+      return res.status(400).json({ error: "State and crop are required" });
+    }
+
+    console.log(`🌾 Fetching schemes for ${farmSize} farmer, ${crop}, ${state}`);
+
+    // Step 1 — Exa searches live govt websites
+    const exa = new Exa(process.env.EXA_API_KEY);
+    const query = `government schemes subsidies for ${farmSize} farmers growing ${crop} in ${state} India 2024 2025`;
+
+    const exaResults = await exa.searchAndContents(query, {
+      numResults: 5,
+      includeDomains: [
+        "pmkisan.gov.in",
+        "agricoop.nic.in",
+        "india.gov.in",
+        "farmer.gov.in",
+        "mkisan.gov.in",
+        "jkagri.nic.in",
+        "jkhorticulture.nic.in",
+      ],
+      useAutoprompt: true,
+      text: { maxCharacters: 1000 },
+    });
+
+    console.log(`✅ Exa found ${exaResults.results.length} results`);
+
+    // Step 2 — Pass to Gemini to summarize simply
+    const schemesText = exaResults.results
+      .map((r) => `${r.title}: ${r.text}`)
+      .join("\n\n");
+
+    const prompt = `You are a helpful assistant for Indian farmers.
+Based on this information about government schemes:
+${schemesText}
+
+List the top 3-4 most relevant schemes for a ${farmSize} farmer growing ${crop} in ${state}.
+
+For each scheme provide:
+- Scheme name
+- What benefit they get (in very simple language)
+- Who is eligible
+- How to apply (steps)
+- Website or helpline number
+
+IMPORTANT: Respond in ${language} language only. Keep it very simple and easy for a farmer to understand.`;
+
+    const result = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+
+    const summary =
+      result.candidates[0]?.content?.parts[0]?.text ||
+      "Unable to fetch schemes";
+
+    res.json({
+      success: true,
+      schemes: summary,
+      sources: exaResults.results.map((r) => ({
+        title: r.title,
+        url: r.url,
+      })),
+    });
+  } catch (err) {
+    console.error("❌ Schemes error:", err.message);
+    res.status(500).json({ error: "Failed to fetch schemes: " + err.message });
+  }
+});
+
+// Crop Failure Guide + PM Fasal Bima Insurance
+app.post("/api/crop-insurance", async (req, res) => {
+  try {
+    const { crop, state, language = "English" } = req.body;
+
+    if (!crop || !state) {
+      return res.status(400).json({ error: "Crop and state are required" });
+    }
+
+    console.log(`🌾 Fetching crop failure guide for ${crop} in ${state}`);
+
+    const prompt = `You are a helpful assistant for Indian farmers who have experienced crop failure.
+
+A ${crop} farmer in ${state} needs help. Provide:
+
+1. Immediate Steps (what to do in first 72 hours after crop failure)
+2. PM Fasal Bima Yojana (crop insurance scheme):
+   - Am I eligible?
+   - How to register (step by step)
+   - Documents needed
+   - How to file a claim
+   - Time limit to file claim
+   - Expected compensation
+3. State-specific schemes for ${state} farmers
+4. Helpline numbers (PM Fasal Bima, state agriculture dept)
+5. Next crop advice (what to plant next season after ${crop} failure)
+
+IMPORTANT: Respond in ${language} language only. Keep it very simple for a farmer to understand. Use numbered steps.`;
+
+    const result = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+
+    const guide = result.candidates[0]?.content?.parts[0]?.text ||
+                  "Unable to generate guide";
+
+    res.json({
+      success: true,
+      crop,
+      state,
+      guide,
+      quickInfo: {
+        pmfbyHelpline: "1800-180-1551",
+        pmfbyWebsite: "https://pmfby.gov.in",
+        claimWindow: "72 hours after crop damage",
+        registrationDeadline: "Before sowing season ends",
+      }
+    });
+
+  } catch (err) {
+    console.error("❌ Crop insurance error:", err.message);
+    res.status(500).json({ error: "Failed to generate guide: " + err.message });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Plant Detection Routes
 app.use("/api/plant-detection", plantDetectionRouter);
