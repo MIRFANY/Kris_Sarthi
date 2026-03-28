@@ -34,7 +34,12 @@ mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/krishi-sa
 
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  credentials: false,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
 app.use(express.static("uploads")); // Serve uploaded files
 
