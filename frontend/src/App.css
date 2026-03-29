@@ -1,14 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=Syne:wght@500;600;700;800&display=swap");
 
 .ks-landing {
-  --ks-bg: #060a06;
-  --ks-surface: rgba(255, 255, 255, 0.03);
-  --ks-border: rgba(255, 255, 255, 0.08);
-  --ks-accent: #7fff6a;
-  --ks-text: #f0f4ee;
-  --ks-muted: rgba(240, 244, 238, 0.56);
+  --ks-bg: #f8faf7;
+  --ks-surface: #ffffff;
+  --ks-border: rgba(67, 160, 71, 0.2);
+  --ks-accent: #43a047;
+  --ks-text: #1b1b1b;
+  --ks-muted: rgba(27, 27, 27, 0.6);
   min-height: 100vh;
-  background: radial-gradient(circle at 78% 34%, rgba(127, 255, 106, 0.14) 0%, transparent 52%), var(--ks-bg);
+  background: linear-gradient(135deg, #f8faf7 0%, #f0f5f0 100%);
   color: var(--ks-text);
   position: relative;
   overflow: hidden;
@@ -18,22 +18,22 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(127, 255, 106, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(127, 255, 106, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(67, 160, 71, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(67, 160, 71, 0.04) 1px, transparent 1px);
   background-size: 56px 56px;
   pointer-events: none;
 }
 
 .ks-explore-root {
-  --ks-bg: #060a06;
-  --ks-surface: rgba(255, 255, 255, 0.03);
-  --ks-border: rgba(255, 255, 255, 0.08);
-  --ks-accent: #7fff6a;
-  --ks-text: #f0f4ee;
-  --ks-muted: rgba(240, 244, 238, 0.56);
+  --ks-bg: #f8faf7;
+  --ks-surface: #ffffff;
+  --ks-border: rgba(67, 160, 71, 0.2);
+  --ks-accent: #43a047;
+  --ks-text: #1b1b1b;
+  --ks-muted: rgba(27, 27, 27, 0.6);
   min-height: 100vh;
-  background: radial-gradient(circle at 72% 18%, rgba(127, 255, 106, 0.13) 0%, transparent 45%), #060a06;
-  color: #f0f4ee;
+  background: linear-gradient(135deg, #f8faf7 0%, #f0f5f0 100%);
+  color: #1b1b1b;
   position: relative;
 }
 
@@ -46,8 +46,8 @@
   justify-content: space-between;
   gap: 10px;
   padding: 14px 24px;
-  border-bottom: 1px solid rgba(127, 255, 106, 0.2);
-  background: rgba(6, 10, 6, 0.84);
+  border-bottom: 1px solid rgba(67, 160, 71, 0.15);
+  background: rgba(248, 250, 247, 0.95);
   backdrop-filter: blur(14px);
 }
 
@@ -59,9 +59,9 @@
 }
 
 .ks-explore-tab {
-  border: 1px solid rgba(127, 255, 106, 0.2);
-  background: rgba(255, 255, 255, 0.03);
-  color: rgba(240, 244, 238, 0.88);
+  border: 1px solid rgba(67, 160, 71, 0.25);
+  background: #ffffff;
+  color: #1b1b1b;
   border-radius: 999px;
   padding: 8px 14px;
   font-family: "Syne", sans-serif;
@@ -71,8 +71,9 @@
 }
 
 .ks-explore-tab-active {
-  background: rgba(127, 255, 106, 0.12);
-  border-color: rgba(127, 255, 106, 0.35);
+  background: #43a047;
+  color: #ffffff;
+  border-color: #43a047;
 }
 
 .ks-explore-main {
@@ -89,12 +90,13 @@
   font-weight: 400;
   letter-spacing: -0.4px;
   font-size: clamp(34px, 5.3vw, 58px);
+  color: #1b1b1b;
 }
 
 .ks-explore-hero p {
   margin: 12px 0 0;
   max-width: 760px;
-  color: rgba(240, 244, 238, 0.68);
+  color: rgba(27, 27, 27, 0.65);
   line-height: 1.75;
 }
 
@@ -110,10 +112,11 @@
 }
 
 .ks-explore-card {
-  background: rgba(11, 20, 11, 0.9);
-  border: 1px solid rgba(127, 255, 106, 0.22);
+  background: #ffffff;
+  border: 1px solid rgba(67, 160, 71, 0.15);
   border-radius: 18px;
   padding: 18px;
+  box-shadow: 0 2px 8px rgba(67, 160, 71, 0.06);
 }
 
 .ks-explore-card h3 {
@@ -122,11 +125,12 @@
   font-size: 36px;
   font-weight: 400;
   line-height: 1.18;
+  color: #1b1b1b;
 }
 
 .ks-explore-card p {
   margin: 10px 0 0;
-  color: rgba(240, 244, 238, 0.73);
+  color: rgba(27, 27, 27, 0.7);
   line-height: 1.7;
 }
 
@@ -138,30 +142,31 @@
 }
 
 .ks-explore-select {
-  border-radius: 999px;
-  border: 1px solid rgba(127, 255, 106, 0.28);
-  background: rgba(255, 255, 255, 0.04);
-  color: #f0f4ee;
+  border-radius: 8px;
+  border: 1px solid rgba(67, 160, 71, 0.25);
+  background: #ffffff;
+  color: #1b1b1b;
   padding: 10px 14px;
   min-width: 220px;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 .ks-explore-select option {
-  background: #0f170f;
-  color: #f0f4ee;
+  background: #ffffff;
+  color: #1b1b1b;
 }
 
 .ks-explore-actions .ks-cta {
-  background: var(--ks-accent);
-  color: #051105;
-  border: 1px solid rgba(127, 255, 106, 0.45);
+  background: #43a047;
+  color: #ffffff;
+  border: 1px solid #43a047;
 }
 
 .ks-explore-actions .ks-ghost,
 .ks-explore-nav .ks-ghost {
-  color: #f0f4ee;
-  border-color: rgba(127, 255, 106, 0.3);
+  color: #1b1b1b;
+  border-color: rgba(67, 160, 71, 0.3);
+  background: transparent;
 }
 
 .ks-explore-card-expand {
@@ -179,7 +184,7 @@
   font-weight: 600;
   letter-spacing: 0.35px;
   text-transform: uppercase;
-  color: rgba(200, 255, 190, 0.85);
+  color: #43a047;
 }
 
 .ks-explore-scroll {
@@ -202,9 +207,9 @@
 }
 
 .ks-explore-embed-light {
-  border: 1px solid rgba(127, 255, 106, 0.22);
+  border: 1px solid rgba(67, 160, 71, 0.2);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.98);
+  background: #ffffff;
   box-sizing: border-box;
 }
 
@@ -218,16 +223,17 @@
 }
 
 .ks-crop-stage-hub-list li {
-  border: 1px solid rgba(127, 255, 106, 0.18);
-  background: rgba(127, 255, 106, 0.04);
+  border: 1px solid rgba(67, 160, 71, 0.15);
+  background: rgba(67, 160, 71, 0.06);
   border-radius: 12px;
   padding: 10px 12px;
+  color: #1b1b1b;
 }
 
 .ks-crop-stage-hub-current {
-  border-color: rgba(127, 255, 106, 0.45) !important;
-  background: rgba(127, 255, 106, 0.1) !important;
-  box-shadow: 0 0 0 1px rgba(127, 255, 106, 0.12);
+  border-color: rgba(67, 160, 71, 0.4) !important;
+  background: rgba(67, 160, 71, 0.12) !important;
+  box-shadow: 0 0 0 1px rgba(67, 160, 71, 0.08);
 }
 
 .ks-crop-stage-hub-top {
@@ -244,8 +250,8 @@
   min-width: 22px;
   height: 22px;
   border-radius: 8px;
-  background: rgba(127, 255, 106, 0.2);
-  color: #e8ffe4;
+  background: rgba(67, 160, 71, 0.15);
+  color: #43a047;
   font-size: 11px;
   font-weight: 700;
 }
@@ -255,7 +261,7 @@
   min-width: 0;
   font-weight: 600;
   font-size: 13px;
-  color: #f0f4ee;
+  color: #1b1b1b;
 }
 
 .ks-crop-stage-hub-badge {
@@ -265,21 +271,21 @@
   letter-spacing: 0.4px;
   padding: 3px 8px;
   border-radius: 999px;
-  background: rgba(127, 255, 106, 0.35);
-  color: #051105;
+  background: rgba(67, 160, 71, 0.2);
+  color: #43a047;
 }
 
 .ks-crop-stage-hub-meta {
   margin-top: 4px;
   font-size: 12px;
-  color: rgba(180, 255, 170, 0.95);
+  color: #1b1b1b;
 }
 
 .ks-crop-stage-hub-tip {
   margin: 6px 0 0;
   font-size: 12px;
   line-height: 1.5;
-  color: rgba(240, 244, 238, 0.78);
+  color: #666666;
 }
 
 .ks-market-hub-list {
@@ -295,8 +301,8 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  border: 1px solid rgba(127, 255, 106, 0.16);
-  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(67, 160, 71, 0.15);
+  background: #ffffff;
   border-radius: 10px;
   padding: 8px 10px;
 }
@@ -304,17 +310,17 @@
 .ks-market-hub-crop {
   font-weight: 600;
   font-size: 13px;
-  color: #f0f4ee;
+  color: #1b1b1b;
 }
 
 .ks-market-hub-price {
   font-size: 13px;
-  color: rgba(200, 255, 190, 0.95);
+  color: #43a047;
 }
 
 .ks-market-hub-meta {
   font-size: 11px;
-  color: rgba(240, 244, 238, 0.55);
+  color: #999999;
 }
 
 .ks-disease-hub-scores {
@@ -336,7 +342,7 @@
   align-items: flex-start;
   gap: 10px;
   font-size: 12px;
-  border-bottom: 1px solid rgba(127, 255, 106, 0.12);
+  border-bottom: 1px solid rgba(67, 160, 71, 0.15);
   padding-bottom: 6px;
 }
 
@@ -346,20 +352,20 @@
 }
 
 .ks-disease-hub-list span:first-child {
-  color: rgba(240, 244, 238, 0.9);
+  color: #1b1b1b;
   word-break: break-word;
 }
 
 .ks-disease-hub-list span:last-child {
   font-weight: 700;
-  color: #c8ffc0;
+  color: #43a047;
   white-space: nowrap;
 }
 
 .ks-weather-panel {
   margin-top: 10px;
-  border: 1px solid rgba(127, 255, 106, 0.2);
-  background: rgba(127, 255, 106, 0.06);
+  border: 1px solid rgba(67, 160, 71, 0.15);
+  background: rgba(67, 160, 71, 0.05);
   border-radius: 12px;
   padding: 10px;
 }
@@ -368,7 +374,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #f0f4ee;
+  color: #1b1b1b;
   font-size: 14px;
   margin-bottom: 8px;
 }
@@ -380,31 +386,31 @@
 }
 
 .ks-weather-chip {
-  border: 1px solid rgba(127, 255, 106, 0.15);
-  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(67, 160, 71, 0.15);
+  background: #ffffff;
   border-radius: 8px;
   padding: 6px 8px;
   font-size: 12px;
-  color: rgba(240, 244, 238, 0.9);
+  color: #1b1b1b;
 }
 
 .ks-weather-advisory {
   margin: 8px 0 0;
   padding-left: 18px;
-  color: rgba(240, 244, 238, 0.86);
+  color: #666666;
   font-size: 12px;
   line-height: 1.55;
 }
 
 .ks-forecast-strip {
   margin-top: 10px;
-  border-top: 1px solid rgba(127, 255, 106, 0.15);
+  border-top: 1px solid rgba(67, 160, 71, 0.15);
   padding-top: 10px;
 }
 
 .ks-forecast-title {
   margin: 0 0 8px;
-  color: #d8ffd0;
+  color: #43a047;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.4px;
@@ -431,9 +437,9 @@
 }
 
 .ks-forecast-card {
-  border: 1px solid rgba(127, 255, 106, 0.16);
+  border: 1px solid rgba(67, 160, 71, 0.15);
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.16);
+  background: #ffffff;
   padding: 6px 5px;
   display: flex;
   flex-direction: column;
@@ -444,7 +450,7 @@
 
 .ks-forecast-date {
   font-size: 10px;
-  color: rgba(240, 244, 238, 0.72);
+  color: #999999;
 }
 
 .ks-forecast-icon {
@@ -453,22 +459,22 @@
 
 .ks-forecast-temp {
   font-size: 10px;
-  color: rgba(240, 244, 238, 0.9);
+  color: #1b1b1b;
 }
 
 .ks-forecast-rain {
   font-size: 9px;
-  color: rgba(166, 219, 255, 0.9);
+  color: #2196f3;
 }
 
 .ks-inline-note {
   margin-top: 10px;
-  border: 1px solid rgba(127, 255, 106, 0.18);
-  background: rgba(127, 255, 106, 0.06);
+  border: 1px solid rgba(67, 160, 71, 0.15);
+  background: rgba(67, 160, 71, 0.05);
   border-radius: 10px;
   padding: 8px 10px;
   font-size: 12px;
-  color: rgba(240, 244, 238, 0.86);
+  color: #666666;
 }
 
 .ks-history-preview-list {
@@ -478,8 +484,8 @@
 }
 
 .ks-history-preview-item {
-  border: 1px solid rgba(127, 255, 106, 0.2);
-  background: rgba(127, 255, 106, 0.05);
+  border: 1px solid rgba(67, 160, 71, 0.15);
+  background: #ffffff;
   border-radius: 10px;
   padding: 8px 10px;
   display: flex;
@@ -488,17 +494,17 @@
 }
 
 .ks-history-preview-item strong {
-  color: #f0f4ee;
+  color: #1b1b1b;
   font-size: 13px;
 }
 
 .ks-history-preview-item span {
-  color: rgba(240, 244, 238, 0.82);
+  color: #666666;
   font-size: 12px;
 }
 
 .ks-history-preview-item small {
-  color: rgba(240, 244, 238, 0.58);
+  color: #999999;
   font-size: 11px;
 }
 
@@ -529,8 +535,8 @@
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: linear-gradient(145deg, #3d8b37, #7fff6a);
-  color: #051105;
+  background: linear-gradient(145deg, #2e7d31, #43a047);
+  color: #ffffff;
 }
 
 .ks-nav-actions {
@@ -555,7 +561,7 @@
   border: 1px solid var(--ks-border);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.02);
-  box-shadow: inset 0 0 0 1px rgba(127, 255, 106, 0.03);
+  box-shadow: inset 0 0 0 1px rgba(67, 160, 71, 0.05);
 }
 
 .ks-language-menu {
@@ -563,11 +569,11 @@
   border: 1px solid var(--ks-border);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.02);
-  box-shadow: inset 0 0 0 1px rgba(127, 255, 106, 0.03);
+  box-shadow: inset 0 0 0 1px rgba(67, 160, 71, 0.05);
 }
 
 .ks-language-menu[open] {
-  border-color: rgba(127, 255, 106, 0.35);
+  border-color: rgba(67, 160, 71, 0.25);
 }
 
 .ks-language-summary {
@@ -598,9 +604,9 @@
   min-width: 140px;
   padding: 8px;
   border-radius: 12px;
-  border: 1px solid rgba(127, 255, 106, 0.26);
-  background: rgba(9, 16, 9, 0.98);
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(67, 160, 71, 0.2);
+  background: #ffffff;
+  box-shadow: 0 16px 30px rgba(67, 160, 71, 0.08);
   display: grid;
   gap: 4px;
   z-index: 35;
@@ -609,7 +615,7 @@
 .ks-language-option {
   border: 1px solid transparent;
   background: transparent;
-  color: rgba(240, 244, 238, 0.86);
+  color: #1b1b1b;
   border-radius: 8px;
   padding: 7px 10px;
   text-align: left;
@@ -620,14 +626,14 @@
 }
 
 .ks-language-option:hover {
-  background: rgba(127, 255, 106, 0.11);
-  border-color: rgba(127, 255, 106, 0.25);
+  background: rgba(67, 160, 71, 0.1);
+  border-color: rgba(67, 160, 71, 0.2);
 }
 
 .ks-language-option-active {
-  background: rgba(127, 255, 106, 0.16);
-  border-color: rgba(127, 255, 106, 0.3);
-  color: #e9ffe4;
+  background: rgba(67, 160, 71, 0.15);
+  border-color: rgba(67, 160, 71, 0.25);
+  color: #43a047;
 }
 
 .ks-language-menu-compact .ks-language-summary {
@@ -638,7 +644,7 @@
   padding-left: 12px;
   font-family: "Syne", sans-serif;
   font-size: 11px;
-  color: rgba(127, 255, 106, 0.95);
+  color: #43a047;
   font-weight: 700;
 }
 
@@ -659,15 +665,15 @@
 }
 
 .ks-language option {
-  background: #101910;
-  color: #f0f4ee;
+  background: #ffffff;
+  color: #1b1b1b;
 }
 
 .ks-language-caret {
   position: absolute;
   right: 12px;
   font-size: 10px;
-  color: rgba(240, 244, 238, 0.7);
+  color: #999999;
   pointer-events: none;
 }
 
@@ -688,7 +694,7 @@
   font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(127, 255, 106, 0.9);
+  color: #43a047;
   margin-bottom: 18px;
 }
 
@@ -710,7 +716,7 @@
   margin: 24px 0 0;
   max-width: 560px;
   line-height: 1.78;
-  color: var(--ks-muted);
+  color: #666666;
   font-size: 15px;
   font-family: "Inter", sans-serif;
 }
@@ -732,11 +738,11 @@
 }
 
 .ks-hero-helper-item {
-  border: 1px solid rgba(127, 255, 106, 0.38);
-  background: rgba(127, 255, 106, 0.18);
+  border: 1px solid rgba(67, 160, 71, 0.2);
+  background: rgba(67, 160, 71, 0.08);
   border-radius: 12px;
   padding: 9px 11px;
-  box-shadow: 0 8px 24px rgba(3, 12, 5, 0.45);
+  box-shadow: 0 8px 24px rgba(67, 160, 71, 0.08);
 }
 
 .ks-hero-helper-item span {
@@ -746,15 +752,15 @@
   font-weight: 700;
   letter-spacing: 0.7px;
   text-transform: uppercase;
-  color: rgba(7, 20, 8, 0.92);
-  background: rgba(127, 255, 106, 0.92);
+  color: #ffffff;
+  background: #43a047;
   border-radius: 999px;
   padding: 3px 8px;
 }
 
 .ks-hero-helper-item p {
   margin: 7px 0 0;
-  color: #ecffe8;
+  color: #1b1b1b;
   font-size: 12px;
   line-height: 1.45;
   font-weight: 600;
@@ -774,14 +780,14 @@
   padding: 8px 11px;
   margin-top: 4px;
   border-radius: 10px;
-  border: 1px solid rgba(127, 255, 106, 0.45);
-  background: rgba(127, 255, 106, 0.16);
-  color: #ecffe8;
+  border: 1px solid rgba(67, 160, 71, 0.25);
+  background: rgba(67, 160, 71, 0.08);
+  color: #1b1b1b;
   font-family: "Inter", sans-serif;
   font-size: 11px;
   font-weight: 500;
   line-height: 1.45;
-  box-shadow: 0 10px 24px rgba(3, 14, 5, 0.52);
+  box-shadow: 0 10px 24px rgba(67, 160, 71, 0.1);
   animation: ksBtnPop 0.36s ease;
   pointer-events: none;
 }
@@ -794,9 +800,9 @@
   width: 10px;
   height: 10px;
   transform: rotate(45deg);
-  background: rgba(127, 255, 106, 0.16);
-  border-left: 1px solid rgba(127, 255, 106, 0.45);
-  border-top: 1px solid rgba(127, 255, 106, 0.45);
+  background: rgba(67, 160, 71, 0.08);
+  border-left: 1px solid rgba(67, 160, 71, 0.25);
+  border-top: 1px solid rgba(67, 160, 71, 0.25);
 }
 
 .ks-btn-guide-title {
@@ -805,14 +811,14 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.55px;
-  color: rgba(127, 255, 106, 0.96);
+  color: #43a047;
 }
 
 .ks-btn-guide p {
   margin: 0;
   font-size: 12px;
   line-height: 1.45;
-  color: rgba(240, 255, 237, 0.94);
+  color: #666666;
 }
 
 .ks-cta,
@@ -829,12 +835,12 @@
 .ks-cta {
   background: var(--ks-accent);
   border: 1px solid transparent;
-  color: #051105;
+  color: #ffffff;
 }
 
 .ks-cta:hover {
   transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 0 26px rgba(127, 255, 106, 0.38);
+  box-shadow: 0 0 26px rgba(67, 160, 71, 0.25);
 }
 
 .ks-ghost {
@@ -844,7 +850,7 @@
 }
 
 .ks-ghost:hover {
-  border-color: rgba(127, 255, 106, 0.32);
+  border-color: rgba(67, 160, 71, 0.3);
 }
 
 .ks-features-wrap {
@@ -869,9 +875,9 @@
 }
 
 .ks-guide-btn {
-  border: 1px solid rgba(127, 255, 106, 0.28);
-  background: rgba(127, 255, 106, 0.08);
-  color: #c9ffc0;
+  border: 1px solid rgba(67, 160, 71, 0.2);
+  background: rgba(67, 160, 71, 0.08);
+  color: #43a047;
   border-radius: 999px;
   padding: 8px 14px;
   font-family: "Syne", sans-serif;
@@ -883,7 +889,7 @@
 }
 
 .ks-guide-btn:hover {
-  background: rgba(127, 255, 106, 0.16);
+  background: rgba(67, 160, 71, 0.15);
   transform: translateY(-1px);
 }
 
@@ -903,7 +909,7 @@
   margin-bottom: 26px;
   border: 1px solid var(--ks-border);
   border-radius: 20px;
-  background: rgba(9, 15, 9, 0.86);
+  background: #ffffff;
   overflow: hidden;
 }
 
@@ -912,7 +918,7 @@
   margin-bottom: 26px;
   border: 1px solid var(--ks-border);
   border-radius: 18px;
-  background: rgba(10, 18, 10, 0.9);
+  background: #ffffff;
   padding: 18px;
 }
 
@@ -921,11 +927,12 @@
   font-family: "Instrument Serif", serif;
   font-size: 30px;
   font-weight: 400;
+  color: #1b1b1b;
 }
 
 .ks-flow-detail-wrap > p {
   margin: 8px 0 0;
-  color: var(--ks-muted);
+  color: #666666;
   line-height: 1.7;
   font-size: 14px;
 }
@@ -938,9 +945,9 @@
 }
 
 .ks-flow-detail-card {
-  border: 1px solid rgba(127, 255, 106, 0.2);
+  border: 1px solid rgba(67, 160, 71, 0.15);
   border-radius: 12px;
-  background: rgba(127, 255, 106, 0.06);
+  background: rgba(67, 160, 71, 0.05);
   padding: 12px;
 }
 
@@ -949,19 +956,19 @@
   font-family: "Syne", sans-serif;
   font-size: 13px;
   letter-spacing: 0.4px;
-  color: #d8ffd0;
+  color: #43a047;
 }
 
 .ks-flow-detail-card p {
   margin: 7px 0 0;
   font-size: 12px;
   line-height: 1.6;
-  color: rgba(240, 244, 238, 0.82);
+  color: #666666;
 }
 
 .ks-steps-head {
   padding: 22px 24px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(67, 160, 71, 0.1);
 }
 
 .ks-steps-head h3 {
@@ -970,11 +977,12 @@
   font-size: clamp(26px, 4vw, 42px);
   font-weight: 400;
   letter-spacing: -0.3px;
+  color: #1b1b1b;
 }
 
 .ks-steps-head p {
   margin: 8px 0 0;
-  color: var(--ks-muted);
+  color: #666666;
   font-size: 14px;
   line-height: 1.7;
   max-width: 720px;
@@ -988,14 +996,14 @@
 }
 
 .ks-step-card {
-  background: rgba(10, 18, 10, 0.95);
+  background: #ffffff;
   padding: 18px 20px 20px;
 }
 
 .ks-step-num {
   display: inline-flex;
-  color: rgba(127, 255, 106, 0.95);
-  border: 1px solid rgba(127, 255, 106, 0.3);
+  color: #43a047;
+  border: 1px solid rgba(67, 160, 71, 0.25);
   border-radius: 999px;
   padding: 3px 10px;
   font-size: 11px;
@@ -1010,20 +1018,21 @@
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 0.2px;
+  color: #1b1b1b;
 }
 
 .ks-step-card p {
   margin: 8px 0 0;
   font-size: 14px;
-  color: var(--ks-muted);
+  color: #666666;
   line-height: 1.7;
 }
 
 .ks-step-guide {
   position: relative;
   margin-top: 12px;
-  border: 1px solid rgba(127, 255, 106, 0.34);
-  background: rgba(127, 255, 106, 0.1);
+  border: 1px solid rgba(67, 160, 71, 0.2);
+  background: rgba(67, 160, 71, 0.08);
   border-radius: 10px;
   padding: 8px 10px;
   animation: ksGuideIn 0.32s ease;
@@ -1037,9 +1046,9 @@
   width: 10px;
   height: 10px;
   transform: rotate(45deg);
-  background: rgba(127, 255, 106, 0.1);
-  border-left: 1px solid rgba(127, 255, 106, 0.34);
-  border-top: 1px solid rgba(127, 255, 106, 0.34);
+  background: rgba(67, 160, 71, 0.08);
+  border-left: 1px solid rgba(67, 160, 71, 0.2);
+  border-top: 1px solid rgba(67, 160, 71, 0.2);
 }
 
 .ks-step-guide span {
@@ -1049,27 +1058,27 @@
   font-weight: 700;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: rgba(127, 255, 106, 0.96);
+  color: #43a047;
 }
 
 .ks-step-guide p {
   margin: 6px 0 0;
   font-size: 12px;
   line-height: 1.55;
-  color: rgba(236, 255, 233, 0.92);
+  color: #1b1b1b;
 }
 
 .ks-feature-card {
   position: relative;
-  background: rgba(10, 18, 10, 0.92);
+  background: #ffffff;
   padding: 24px;
   animation: ksFadeUp 0.52s ease both;
 }
 
 .ks-feature-tag {
   display: inline-flex;
-  border: 1px solid rgba(127, 255, 106, 0.25);
-  color: rgba(127, 255, 106, 0.94);
+  border: 1px solid rgba(67, 160, 71, 0.2);
+  color: #43a047;
   padding: 4px 10px;
   border-radius: 999px;
   font-family: "Syne", sans-serif;
@@ -1085,6 +1094,7 @@
   line-height: 1.2;
   font-family: "Instrument Serif", serif;
   font-weight: 400;
+  color: #1b1b1b;
 }
 
 .ks-guide-chip {
@@ -1092,8 +1102,8 @@
   margin-top: 14px;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(127, 255, 106, 0.35);
-  background: linear-gradient(135deg, rgba(127, 255, 106, 0.12), rgba(127, 255, 106, 0.05));
+  border: 1px solid rgba(67, 160, 71, 0.2);
+  background: linear-gradient(135deg, rgba(67, 160, 71, 0.08), rgba(67, 160, 71, 0.04));
   animation: ksGuideIn 0.35s ease;
 }
 
@@ -1105,21 +1115,21 @@
   width: 12px;
   height: 12px;
   transform: rotate(45deg);
-  background: rgba(127, 255, 106, 0.11);
-  border-left: 1px solid rgba(127, 255, 106, 0.28);
-  border-top: 1px solid rgba(127, 255, 106, 0.28);
+  background: rgba(67, 160, 71, 0.08);
+  border-left: 1px solid rgba(67, 160, 71, 0.2);
+  border-top: 1px solid rgba(67, 160, 71, 0.2);
 }
 
 .ks-guide-chip p {
   margin: 0;
   font-size: 12px;
   line-height: 1.55;
-  color: rgba(235, 255, 231, 0.9);
+  color: #1b1b1b;
 }
 
 .ks-guide-chip p + p {
   margin-top: 6px;
-  color: rgba(233, 249, 230, 0.8);
+  color: #666666;
 }
 
 @keyframes ksGuideIn {
@@ -1136,10 +1146,10 @@
 @keyframes ksGuidePulse {
   0%,
   100% {
-    box-shadow: 0 0 0 rgba(127, 255, 106, 0);
+    box-shadow: 0 0 0 rgba(67, 160, 71, 0);
   }
   50% {
-    box-shadow: 0 0 16px rgba(127, 255, 106, 0.17);
+    box-shadow: 0 0 16px rgba(67, 160, 71, 0.12);
   }
 }
 
@@ -1165,8 +1175,8 @@
 .ks-feature-pop {
   position: relative;
   margin-top: 12px;
-  border: 1px solid rgba(127, 255, 106, 0.28);
-  background: rgba(127, 255, 106, 0.08);
+  border: 1px solid rgba(67, 160, 71, 0.2);
+  background: rgba(67, 160, 71, 0.08);
   border-radius: 12px;
   padding: 10px 11px;
 }
@@ -1179,9 +1189,9 @@
   width: 12px;
   height: 12px;
   transform: rotate(45deg);
-  background: rgba(127, 255, 106, 0.08);
-  border-left: 1px solid rgba(127, 255, 106, 0.28);
-  border-top: 1px solid rgba(127, 255, 106, 0.28);
+  background: rgba(67, 160, 71, 0.08);
+  border-left: 1px solid rgba(67, 160, 71, 0.2);
+  border-top: 1px solid rgba(67, 160, 71, 0.2);
 }
 
 .ks-feature-pop span {
@@ -1189,14 +1199,14 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: rgba(127, 255, 106, 0.95);
+  color: #43a047;
   font-family: "Syne", sans-serif;
   font-weight: 700;
 }
 
 .ks-feature-pop p {
   margin: 6px 0 0;
-  color: rgba(240, 244, 238, 0.9);
+  color: #1b1b1b;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -1206,7 +1216,7 @@
 }
 
 .ks-feature-pop strong {
-  color: rgba(215, 255, 207, 0.98);
+  color: #43a047;
   font-weight: 600;
 }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import FormattedMessage from "./FormattedMessage";
 
 const API_URL = process.env.REACT_APP_API_URL || "https://kris-sarthi-1.onrender.com";
 
@@ -25,6 +26,8 @@ export default function CropInsurance({ userCrop, userState, userLanguage }) {
     setLoading(true);
     setError(null);
     setResult(null);
+    const selectedLanguage = userLanguage || "English";
+    console.log(`Fetching crop insurance guide in: ${selectedLanguage}`);
     try {
       const res = await fetch(`${API_URL}/api/crop-insurance`, {
         method: "POST",
@@ -32,7 +35,7 @@ export default function CropInsurance({ userCrop, userState, userLanguage }) {
         body: JSON.stringify({
           crop,
           state,
-          language: userLanguage || "English",
+          language: selectedLanguage,
         }),
       });
       const data = await res.json();
@@ -52,7 +55,7 @@ export default function CropInsurance({ userCrop, userState, userLanguage }) {
         const cleaned = line.replace(/^[#*\d.]+\s*/, "").replace(/\*\*/g, "").trim();
         return (
           <p key={i} style={{
-            color: "#2e7d32", fontWeight: "700", fontSize: "14px",
+            color: "#43a047", fontWeight: "700", fontSize: "14px",
             marginTop: "14px", marginBottom: "4px",
             borderLeft: "3px solid #43a047", paddingLeft: "8px",
           }}>
@@ -62,20 +65,20 @@ export default function CropInsurance({ userCrop, userState, userLanguage }) {
       }
       if (/\*\*/.test(line)) {
         return (
-          <p key={i} style={{ color: "#1b5e20", fontWeight: "600", fontSize: "13px", marginBottom: "3px" }}>
+          <p key={i} style={{ color: "#1b1b1b", fontWeight: "600", fontSize: "13px", marginBottom: "3px" }}>
             {line.replace(/\*\*/g, "").trim()}
           </p>
         );
       }
       if (/^[-•*]/.test(line.trim())) {
         return (
-          <p key={i} style={{ color: "#2d5a2d", fontSize: "13px", marginLeft: "12px", marginBottom: "2px", lineHeight: "1.6" }}>
+          <p key={i} style={{ color: "#666666", fontSize: "13px", marginLeft: "12px", marginBottom: "2px", lineHeight: "1.6" }}>
             • {line.replace(/^[-•*]\s*/, "").trim()}
           </p>
         );
       }
       return (
-        <p key={i} style={{ color: "#374937", fontSize: "13px", marginBottom: "3px", lineHeight: "1.6" }}>
+        <p key={i} style={{ color: "#666666", fontSize: "13px", marginBottom: "3px", lineHeight: "1.6" }}>
           {line}
         </p>
       );
@@ -85,7 +88,7 @@ export default function CropInsurance({ userCrop, userState, userLanguage }) {
   return (
     <div style={{
       background: "#ffffff",
-      border: "1px solid #a5d6a7",
+      border: "1px solid rgba(67, 160, 71, 0.15)",
       borderRadius: "16px",
       padding: "20px",
       fontFamily: "'Segoe UI', sans-serif",
@@ -95,42 +98,42 @@ export default function CropInsurance({ userCrop, userState, userLanguage }) {
       {/* Header */}
       <div style={{ marginBottom: "16px" }}>
         <span style={{
-          background: "#e8f5e9", color: "#2e7d32", fontSize: "10px",
+          background: "rgba(67, 160, 71, 0.12)", color: "#43a047", fontSize: "10px",
           fontWeight: "700", letterSpacing: "1.5px", padding: "3px 10px",
           borderRadius: "20px", textTransform: "uppercase",
         }}>
           Crop Insurance
         </span>
-        <h2 style={{ margin: "8px 0 2px", fontSize: "18px", fontWeight: "700", color: "#1b5e20" }}>
+        <h2 style={{ margin: "8px 0 2px", fontSize: "18px", fontWeight: "700", color: "#1b1b1b" }}>
           🛡️ Crop Failure Guide
         </h2>
-        <p style={{ color: "#555", fontSize: "12px", margin: 0 }}>
+        <p style={{ color: "#666666", fontSize: "12px", margin: 0 }}>
           PM Fasal Bima Yojana + recovery steps
         </p>
       </div>
 
       {/* Quick Info Banner */}
       <div style={{
-        background: "#e8f5e9", borderRadius: "10px", padding: "12px",
+        background: "#f8faf7", borderRadius: "10px", padding: "12px",
         marginBottom: "16px", display: "flex",
         justifyContent: "space-between", flexWrap: "wrap", gap: "8px",
       }}>
         <div style={{ textAlign: "center" }}>
-          <p style={{ margin: 0, fontSize: "10px", color: "#555" }}>Helpline</p>
-          <p style={{ margin: 0, fontWeight: "700", color: "#2e7d32", fontSize: "13px" }}>
+          <p style={{ margin: 0, fontSize: "10px", color: "#999" }}>Helpline</p>
+          <p style={{ margin: 0, fontWeight: "700", color: "#43a047", fontSize: "13px" }}>
             1800-180-1551
           </p>
         </div>
         <div style={{ textAlign: "center" }}>
-          <p style={{ margin: 0, fontSize: "10px", color: "#555" }}>Claim window</p>
-          <p style={{ margin: 0, fontWeight: "700", color: "#e65100", fontSize: "13px" }}>
+          <p style={{ margin: 0, fontSize: "10px", color: "#999" }}>Claim window</p>
+          <p style={{ margin: 0, fontWeight: "700", color: "#ff9800", fontSize: "13px" }}>
             72 hours
           </p>
         </div>
         <div style={{ textAlign: "center" }}>
-          <p style={{ margin: 0, fontSize: "10px", color: "#555" }}>Official site</p>
+          <p style={{ margin: 0, fontSize: "10px", color: "#999" }}>Official site</p>
           <a href="https://pmfby.gov.in" target="_blank" rel="noopener noreferrer"
-            style={{ fontWeight: "700", color: "#1565c0", fontSize: "13px" }}>
+            style={{ fontWeight: "700", color: "#2196f3", fontSize: "13px" }}>
             pmfby.gov.in ↗
           </a>
         </div>
@@ -139,20 +142,20 @@ export default function CropInsurance({ userCrop, userState, userLanguage }) {
       {/* Filters */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
         <div>
-          <label style={{ color: "#2e7d32", fontSize: "11px", letterSpacing: "1px", display: "block", marginBottom: "4px", fontWeight: "700" }}>
+          <label style={{ color: "#43a047", fontSize: "11px", letterSpacing: "1px", display: "block", marginBottom: "4px", fontWeight: "700" }}>
             CROP
           </label>
           <select value={crop} onChange={(e) => setCrop(e.target.value)}
-            style={{ width: "100%", background: "#f1f8e9", border: "1px solid #a5d6a7", borderRadius: "8px", color: "#1b5e20", padding: "8px", fontSize: "13px", cursor: "pointer" }}>
+            style={{ width: "100%", background: "#f8faf7", border: "1px solid rgba(67,160,71,0.15)", borderRadius: "8px", color: "#1b1b1b", padding: "8px", fontSize: "13px", cursor: "pointer" }}>
             {CROPS.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div>
-          <label style={{ color: "#2e7d32", fontSize: "11px", letterSpacing: "1px", display: "block", marginBottom: "4px", fontWeight: "700" }}>
+          <label style={{ color: "#43a047", fontSize: "11px", letterSpacing: "1px", display: "block", marginBottom: "4px", fontWeight: "700" }}>
             STATE
           </label>
           <select value={state} onChange={(e) => setState(e.target.value)}
-            style={{ width: "100%", background: "#f1f8e9", border: "1px solid #a5d6a7", borderRadius: "8px", color: "#1b5e20", padding: "8px", fontSize: "13px", cursor: "pointer" }}>
+            style={{ width: "100%", background: "#f8faf7", border: "1px solid rgba(67,160,71,0.15)", borderRadius: "8px", color: "#1b1b1b", padding: "8px", fontSize: "13px", cursor: "pointer" }}>
             {STATES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
@@ -161,8 +164,8 @@ export default function CropInsurance({ userCrop, userState, userLanguage }) {
       {/* Button */}
       <button onClick={fetchGuide} disabled={loading}
         style={{
-          width: "100%", background: loading ? "#a5d6a7" : "#2e7d32",
-          border: "none", borderRadius: "10px", color: "white",
+          width: "100%", background: loading ? "#ddd" : "#43a047",
+          border: "none", borderRadius: "10px", color: loading ? "#999" : "white",
           padding: "11px", fontSize: "14px", fontWeight: "700",
           cursor: loading ? "not-allowed" : "pointer", marginBottom: "16px",
         }}>
@@ -171,9 +174,9 @@ export default function CropInsurance({ userCrop, userState, userLanguage }) {
 
       {/* Loading */}
       {loading && (
-        <div style={{ background: "#f1f8e9", borderRadius: "12px", padding: "20px", textAlign: "center", border: "1px solid #a5d6a7" }}>
+        <div style={{ background: "#f8faf7", borderRadius: "12px", padding: "20px", textAlign: "center", border: "1px solid rgba(67,160,71,0.15)" }}>
           <div style={{ fontSize: "28px", marginBottom: "10px" }}>🌾</div>
-          <p style={{ color: "#2e7d32", fontSize: "13px", margin: 0 }}>
+          <p style={{ color: "#43a047", fontSize: "13px", margin: 0 }}>
             Finding PM Fasal Bima + recovery steps for {crop} in {state}...
           </p>
         </div>
@@ -181,7 +184,7 @@ export default function CropInsurance({ userCrop, userState, userLanguage }) {
 
       {/* Error */}
       {error && (
-        <div style={{ background: "#ffebee", border: "1px solid #ef9a9a", borderRadius: "10px", padding: "14px", color: "#c62828", fontSize: "13px" }}>
+        <div style={{ background: "#ffebee", border: "1px solid #ffcdd2", borderRadius: "10px", padding: "14px", color: "#c62828", fontSize: "13px" }}>
           ❌ {error}
         </div>
       )}
@@ -189,26 +192,39 @@ export default function CropInsurance({ userCrop, userState, userLanguage }) {
       {/* Result */}
       {result && (
         <div>
-          <div style={{ background: "#f1f8e9", border: "1px solid #a5d6a7", borderRadius: "12px", padding: "16px", marginBottom: "12px" }}>
-            <p style={{ color: "#2e7d32", fontSize: "11px", letterSpacing: "1.5px", fontWeight: "700", marginBottom: "12px", marginTop: 0 }}>
-              📋 RECOVERY GUIDE — {crop.toUpperCase()} · {state.toUpperCase()}
+          <div style={{ background: "#f8faf7", border: "1px solid rgba(67,160,71,0.15)", borderRadius: "12px", padding: "16px", marginBottom: "12px" }}>
+            <p style={{ color: "#43a047", fontSize: "11px", letterSpacing: "1.5px", fontWeight: "700", marginBottom: "12px", marginTop: 0 }}>
+              📋 RECOVERY GUIDE — {crop.toUpperCase()} · {state.toUpperCase()} · {userLanguage || "English"}
             </p>
-            <div>{formatGuide(result.guide)}</div>
+            <div style={{ maxHeight: "400px", overflowY: "auto", paddingRight: "8px" }}>
+              <FormattedMessage 
+                text={result.guide} 
+                isUserMessage={false}
+                colors={{
+                  userBg: "rgba(67, 160, 71, 0.08)",
+                  botBg: "#ffffff",
+                  text: "#1b1b1b",
+                  primary: "#43a047",
+                  accent: "#66bb6a",
+                  border: "rgba(67, 160, 71, 0.15)",
+                }}
+              />
+            </div>
           </div>
 
           {/* Quick actions */}
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <a href="https://pmfby.gov.in" target="_blank" rel="noopener noreferrer"
-              style={{ flex: 1, background: "#2e7d32", color: "white", padding: "10px", borderRadius: "8px", textAlign: "center", textDecoration: "none", fontSize: "12px", fontWeight: "700" }}>
+              style={{ flex: 1, background: "#43a047", color: "white", padding: "10px", borderRadius: "8px", textAlign: "center", textDecoration: "none", fontSize: "12px", fontWeight: "700" }}>
               Register on PMFBY ↗
             </a>
             <a href="tel:1800-180-1551"
-              style={{ flex: 1, background: "#e8f5e9", color: "#2e7d32", padding: "10px", borderRadius: "8px", textAlign: "center", textDecoration: "none", fontSize: "12px", fontWeight: "700", border: "1px solid #a5d6a7" }}>
+              style={{ flex: 1, background: "#f8faf7", color: "#43a047", padding: "10px", borderRadius: "8px", textAlign: "center", textDecoration: "none", fontSize: "12px", fontWeight: "700", border: "1px solid rgba(67,160,71,0.15)" }}>
               Call 1800-180-1551
             </a>
           </div>
         </div>
-      )}
+      )}}
     </div>
   );
 }

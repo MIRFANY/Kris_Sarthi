@@ -574,7 +574,7 @@ app.post("/api/schemes", async (req, res) => {
       return res.status(400).json({ error: "State and crop are required" });
     }
 
-    console.log(`🌾 Fetching schemes for ${farmSize} farmer, ${crop}, ${state}`);
+    console.log(`Fetching schemes for ${farmSize} farmer, ${crop}, ${state} in language: ${language}`);
 
     // Step 1 — Exa searches live govt websites
     const exa = new Exa(process.env.EXA_API_KEY);
@@ -621,7 +621,9 @@ For each scheme provide:
 - How to apply (numbered steps)
 - Website or helpline number
 
-IMPORTANT: Respond in ${language} language ONLY. Keep it very simple and easy for a farmer to understand.`;
+**CRITICAL INSTRUCTION: You MUST respond ONLY in ${language}. Do NOT respond in any other language. All content must be in ${language}.**
+
+Keep it very simple and easy for a farmer to understand.`;
 
     const result = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -655,7 +657,7 @@ app.post("/api/crop-insurance", async (req, res) => {
       return res.status(400).json({ error: "Crop and state are required" });
     }
 
-    console.log(`🌾 Fetching crop failure guide for ${crop} in ${state}`);
+    console.log(`Fetching crop failure guide for ${crop} in ${state} in language: ${language}`);
 
     const prompt = `You are a helpful assistant for Indian farmers who have experienced crop failure.
 
@@ -680,7 +682,9 @@ Format your response with **markdown**:
 - Use numbered lists (1. 2. 3.) for step-by-step procedures
 - Use > for important warnings or critical actions
 
-IMPORTANT: Respond in ${language} language ONLY. Keep it very simple for a farmer to understand.`;
+**CRITICAL INSTRUCTION: You MUST respond ONLY in ${language}. Do NOT respond in any other language. All content must be in ${language}.**
+
+Keep it very simple for a farmer to understand.`;
 
     const result = await ai.models.generateContent({
       model: "gemini-2.5-flash",

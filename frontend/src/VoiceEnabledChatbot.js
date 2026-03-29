@@ -101,29 +101,29 @@ const VoiceEnabledChatbot = ({ language = "en" }) => {
   return (
     <div
       style={{
-        border: "2px solid #43a047",
+        border: "1px solid rgba(67, 160, 71, 0.15)",
         borderRadius: "12px",
         padding: "16px",
-        background: "#f6fff8",
+        background: "#ffffff",
         maxWidth: "600px",
         margin: "20px auto",
       }}
     >
       {/* Header */}
-      <h2 style={{ color: "#2e7d32", marginTop: 0 }}>
+      <h2 style={{ color: "#43a047", marginTop: 0 }}>
         🤖 GreenGeenie {language === "hi" ? "(हिंदी)" : "(English)"}
       </h2>
 
       {/* Chat History */}
       <div
         style={{
-          background: "white",
+          background: "#f8faf7",
           borderRadius: "8px",
           padding: "10px",
           height: "300px",
           overflowY: "auto",
           marginBottom: "12px",
-          border: "1px solid #a5d6a7",
+          border: "1px solid rgba(67, 160, 71, 0.1)",
         }}
       >
         {chatHistory.length === 0 ? (
@@ -145,8 +145,8 @@ const VoiceEnabledChatbot = ({ language = "en" }) => {
                 style={{
                   display: "inline-block",
                   background:
-                    msg.role === "user" ? "#43a047" : "#e8f5e9",
-                  color: msg.role === "user" ? "white" : "#1b5e20",
+                    msg.role === "user" ? "#43a047" : "rgba(67, 160, 71, 0.08)",
+                  color: msg.role === "user" ? "white" : "#1b1b1b",
                   padding: "10px 12px",
                   borderRadius: "8px",
                   maxWidth: "70%",
@@ -188,9 +188,11 @@ const VoiceEnabledChatbot = ({ language = "en" }) => {
           style={{
             flex: 1,
             padding: "10px",
-            border: "1px solid #a5d6a7",
+            border: "1px solid rgba(67, 160, 71, 0.15)",
             borderRadius: "6px",
             fontSize: "14px",
+            background: "#f8faf7",
+            color: "#1b1b1b",
           }}
         />
         <button

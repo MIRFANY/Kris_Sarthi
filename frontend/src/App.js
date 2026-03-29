@@ -18,20 +18,20 @@ import DetectionHistory from "./DetectionHistory";
 import GovtSchemes from "./GovtSchemes";
 import CropInsurance from "./CropInsurance";
 import FormattedMessage from "./FormattedMessage";
-// --- Explore Route Dark Palette (aligned with landing page) ---
+// --- Modern Light Palette (professional and clean) ---
 const COLORS = {
-  background: "#060a06",
-  card: "rgba(255,255,255,0.03)",
-  cardShadow: "0 24px 50px rgba(0,0,0,0.35)",
-  primary: "#7fff6a",
-  primaryDark: "#3d8b37",
-  accent: "rgba(127,255,106,0.07)",
-  border: "rgba(127,255,106,0.22)",
-  text: "#f0f4ee",
-  buttonText: "#f0f4ee",
-  buttonHover: "#92ff82",
-  inputBg: "rgba(255,255,255,0.05)",
-  inputBorder: "rgba(127,255,106,0.25)",
+  background: "#f8faf7",
+  card: "#ffffff",
+  cardShadow: "0 4px 16px rgba(67, 160, 71, 0.08)",
+  primary: "#43a047",
+  primaryDark: "#2e7d32",
+  accent: "rgba(67, 160, 71, 0.12)",
+  border: "rgba(67, 160, 71, 0.2)",
+  text: "#1b1b1b",
+  buttonText: "#ffffff",
+  buttonHover: "#55c956",
+  inputBg: "#ffffff",
+  inputBorder: "rgba(67, 160, 71, 0.3)",
 };
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
@@ -2374,40 +2374,30 @@ React.useEffect(() => {
           ? "📉 Falling"
           : "➡️ Stable";
 
-    const lineModal = isExplore ? "#b9ffab" : "#2e7d32";
-    const lineMin = isExplore ? "#64b5f6" : "#1565c0";
-    const lineMax = isExplore ? "#ffb74d" : "#ef6c00";
-    const axisColor = isExplore ? "rgba(240,244,238,0.55)" : "#666";
-    const gridColor = isExplore ? "rgba(127,255,106,0.12)" : "#e0e0e0";
+    const lineModal = "#43a047";
+    const lineMin = "#2196f3";
+    const lineMax = "#ff9800";
+    const axisColor = "#999999";
+    const gridColor = "#e0e0e0";
 
-    const wrapStyle = isExplore
-      ? {
-          marginTop: 14,
-          width: "100%",
-          padding: "14px 12px",
-          borderRadius: 12,
-          border: "1px solid rgba(127, 255, 106, 0.22)",
-          background: "rgba(0,0,0,0.2)",
-          boxSizing: "border-box",
-        }
-      : {
-          marginTop: 12,
-          width: "100%",
-          padding: "12px 10px",
-          borderRadius: 10,
-          border: `1px solid ${COLORS.border}`,
-          background: "#fafafa",
-          boxSizing: "border-box",
-        };
+    const wrapStyle = {
+      marginTop: 14,
+      width: "100%",
+      padding: "14px 12px",
+      borderRadius: 12,
+      border: "1px solid rgba(67, 160, 71, 0.15)",
+      background: "#ffffff",
+      boxSizing: "border-box",
+    };
 
     return (
       <div style={wrapStyle}>
         <p
           style={{
             margin: "0 0 10px",
-            fontSize: isExplore ? 15 : 14,
+            fontSize: 14,
             fontWeight: 700,
-            color: isExplore ? "#f0f4ee" : "#333",
+            color: "#1b1b1b",
           }}
         >
           7-Day Price Trend — {commodityLabel} in {districtTitle}
@@ -2431,17 +2421,14 @@ React.useEffect(() => {
                 }}
               />
               <Tooltip
-                contentStyle={
-                  isExplore
-                    ? {
-                        background: "#1a1f1a",
-                        border: "1px solid rgba(127,255,106,0.35)",
-                        borderRadius: 8,
-                        fontSize: 12,
-                        color: "#f0f4ee",
-                      }
-                    : { fontSize: 12 }
-                }
+                contentStyle={{
+                  background: "#ffffff",
+                  border: "1px solid rgba(67, 160, 71, 0.2)",
+                  borderRadius: 8,
+                  fontSize: 12,
+                  color: "#1b1b1b",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                }}
                 formatter={(value, name) =>
                   value == null || Number.isNaN(Number(value))
                     ? ["—", name]
@@ -2450,7 +2437,7 @@ React.useEffect(() => {
                 labelFormatter={(label) => `Date: ${label}`}
               />
               <Legend
-                wrapperStyle={{ fontSize: 11, color: isExplore ? "#f0f4ee" : "#555" }}
+                wrapperStyle={{ fontSize: 11, color: "#666666" }}
               />
               <Line
                 type="monotone"
@@ -2484,23 +2471,13 @@ React.useEffect(() => {
         </div>
 
         <div
-          style={
-            isExplore
-              ? {
-                  marginTop: 14,
-                  padding: "12px 12px",
-                  borderRadius: 10,
-                  background: "rgba(127,255,106,0.06)",
-                  border: "1px solid rgba(127,255,106,0.2)",
-                }
-              : {
-                  marginTop: 12,
-                  padding: "12px 10px",
-                  borderRadius: 8,
-                  background: "#fff",
-                  border: "1px solid #e0e0e0",
-                }
-          }
+          style={{
+            marginTop: 14,
+            padding: "12px 12px",
+            borderRadius: 10,
+            background: "rgba(67, 160, 71, 0.05)",
+            border: "1px solid rgba(67, 160, 71, 0.15)",
+          }}
         >
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 8 }}>
             <span
@@ -2523,7 +2500,7 @@ React.useEffect(() => {
                 margin: "0 0 8px",
                 fontSize: 13,
                 fontWeight: 600,
-                color: isExplore ? "#e8f5e9" : "#1b5e20",
+                color: "#1b5e20",
               }}
             >
               Best day in this window: {rec.bestDayToSell} at ₹{bestModal.toLocaleString("en-IN")}
@@ -2534,7 +2511,7 @@ React.useEffect(() => {
               style={{
                 margin: "0 0 8px",
                 fontSize: 12,
-                color: isExplore ? "rgba(240,244,238,0.75)" : "#666",
+                color: isExplore ? "#1b1b1b" : "#666",
               }}
             >
               Best day in this window: {rec.bestDayToSell}
@@ -2546,7 +2523,7 @@ React.useEffect(() => {
                 margin: "0 0 8px",
                 fontSize: 12,
                 lineHeight: 1.5,
-                color: isExplore ? "rgba(240,244,238,0.9)" : "#444",
+                color: isExplore ? "#1b1b1b" : "#444",
               }}
             >
               {rec.advice}
@@ -2557,7 +2534,7 @@ React.useEffect(() => {
               margin: 0,
               fontSize: 10,
               lineHeight: 1.45,
-              color: isExplore ? "rgba(240,244,238,0.5)" : "#888",
+              color: isExplore ? "#666666" : "#888",
             }}
           >
             This is based on 7-day historical trend only. Market conditions can change rapidly.
@@ -3097,25 +3074,25 @@ if (showFeatureHub) {
                 <p style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700, color: "#90caf9" }}>
                   {activeExplore.mandiWebSectionTitle}
                 </p>
-                <p style={{ margin: "0 0 10px", fontSize: 11, color: "rgba(240,244,238,0.65)" }}>
+                <p style={{ margin: "0 0 10px", fontSize: 11, color: "#666666" }}>
                   {activeExplore.mandiWebSectionSubtitle}
                 </p>
                 {mandiWebResults.map((w, idx) => (
                   <div
                     key={`${w.url}-${idx}`}
                     style={{
-                      background: "rgba(0,0,0,0.2)",
+                      background: "#ffffff",
                       borderRadius: 8,
                       padding: "10px 12px",
                       marginBottom: 8,
-                      border: "1px solid rgba(127,255,106,0.15)",
+                      border: `1px solid ${COLORS.border}`,
                     }}
                   >
                     <a
                       href={w.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ fontWeight: 600, color: "#b9ffab", fontSize: 13 }}
+                      style={{ fontWeight: 600, color: COLORS.primary, fontSize: 13 }}
                     >
                       {w.title}
                     </a>
@@ -3126,13 +3103,13 @@ if (showFeatureHub) {
                         flexWrap: "wrap",
                         gap: 8,
                         fontSize: 10,
-                        color: "rgba(240,244,238,0.7)",
+                        color: "#666666",
                       }}
                     >
                       {w.source ? (
                         <span
                           style={{
-                            background: "rgba(127,255,106,0.12)",
+                            background: "#f0f0f0",
                             padding: "2px 8px",
                             borderRadius: 999,
                           }}
@@ -3214,19 +3191,19 @@ if (showFeatureHub) {
               <div
                 style={{
                   marginTop: 12,
-                  border: "1px solid rgba(127, 255, 106, 0.22)",
+                  border: `1px solid ${COLORS.border}`,
                   borderRadius: 12,
                   overflow: "auto",
                   maxHeight: 240,
                   fontSize: 12,
                 }}
               >
-                <table style={{ width: "100%", borderCollapse: "collapse", color: "#f0f4ee" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", color: COLORS.text }}>
                   <thead>
-                    <tr style={{ background: "rgba(127, 255, 106, 0.12)" }}>
+                    <tr style={{ background: COLORS.primary, color: "#fff" }}>
                       <th style={{ padding: 8, textAlign: "left" }}>Market</th>
                       <th style={{ padding: 8, textAlign: "left" }}>Commodity</th>
-                      <th style={{ padding: 8, textAlign: "right", color: "#b9ffab" }}>Modal ₹/q</th>
+                      <th style={{ padding: 8, textAlign: "right" }}>Modal ₹/q</th>
                       <th style={{ padding: 8, textAlign: "center" }}>Date</th>
                     </tr>
                   </thead>
@@ -3237,14 +3214,14 @@ if (showFeatureHub) {
                       return (
                         <tr
                           key={`${item.market}-${item.commodity}-${idx}`}
-                          style={{ borderTop: "1px solid rgba(127,255,106,0.12)" }}
+                          style={{ borderTop: `1px solid ${COLORS.border}`, background: idx % 2 === 0 ? COLORS.cardBg : "#f8faf7" }}
                         >
-                          <td style={{ padding: 8 }}>{item.market || "—"}</td>
-                          <td style={{ padding: 8 }}>{item.commodity || "—"}</td>
-                          <td style={{ padding: 8, textAlign: "right", fontWeight: 700, color: "#c8ffc0" }}>
+                          <td style={{ padding: 8, color: COLORS.text }}>{item.market || "—"}</td>
+                          <td style={{ padding: 8, color: COLORS.text }}>{item.commodity || "—"}</td>
+                          <td style={{ padding: 8, textAlign: "right", fontWeight: 700, color: "#1b5e20", background: "#e8f5e9" }}>
                             ₹{fmt(item.modalPrice)}
                           </td>
-                          <td style={{ padding: 8, textAlign: "center", opacity: 0.85 }}>{item.date || "—"}</td>
+                          <td style={{ padding: 8, textAlign: "center", color: COLORS.text }}>{item.date || "—"}</td>
                         </tr>
                       );
                     })}
@@ -3380,10 +3357,10 @@ if (showFeatureHub) {
         >
           <div
             style={{
-              background: "#0e170e",
+              background: "#ffffff",
               border: `1px solid ${COLORS.border}`,
               borderRadius: 18,
-              boxShadow: "0 24px 60px rgba(0,0,0,0.45)",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.12)",
               minWidth: 320,
               maxWidth: 400,
               width: "90vw",
@@ -3398,7 +3375,7 @@ if (showFeatureHub) {
           >
             <div
               style={{
-                background: "rgba(127,255,106,0.1)",
+                background: "rgba(67, 160, 71, 0.08)",
                 borderBottom: `1px solid ${COLORS.border}`,
                 color: COLORS.text,
                 borderTopLeftRadius: 18,
@@ -3433,7 +3410,7 @@ if (showFeatureHub) {
                 flex: 1,
                 padding: 18,
                 overflowY: "auto",
-                background: "rgba(255,255,255,0.02)",
+                background: "#ffffff",
               }}
             >
               {chatHistory.length === 0 && !chatLoading && (
@@ -3447,8 +3424,8 @@ if (showFeatureHub) {
                     text={msg.text} 
                     isUserMessage={msg.from === "user"}
                     colors={{
-                      userBg: "rgba(127,255,106,0.16)",
-                      botBg: "rgba(255,255,255,0.06)",
+                      userBg: "rgba(67, 160, 71, 0.12)",
+                      botBg: "#f8faf7",
                       text: COLORS.text,
                       primary: COLORS.primary,
                       accent: COLORS.accent,
@@ -3470,7 +3447,7 @@ if (showFeatureHub) {
                   border: `1px solid ${COLORS.border}`,
                   padding: "10px 12px",
                   outline: "none",
-                  background: "rgba(255,255,255,0.05)",
+                  background: "#f8faf7",
                   color: COLORS.text,
                 }}
               />
@@ -5373,9 +5350,10 @@ if (showFeatureHub) {
                 style={{
                   padding: 10,
                   textAlign: "right",
-                  background: "#2e7d32",
+                  background: COLORS.primary,
                   borderRadius: "0 0 0 0",
                   fontWeight: 700,
+                  color: "#fff",
                 }}
               >
                 Modal Price (₹ / q)
@@ -5779,8 +5757,8 @@ if (showFeatureHub) {
                       text={msg.text} 
                       isUserMessage={msg.from === "user"}
                       colors={{
-                        userBg: "rgba(127,255,106,0.16)",
-                        botBg: "rgba(255,255,255,0.06)",
+                        userBg: "rgba(67, 160, 71, 0.08)",
+                        botBg: "#ffffff",
                         text: COLORS.text,
                         primary: COLORS.primary,
                         accent: COLORS.accent,
@@ -6005,13 +5983,13 @@ if (typeof window !== "undefined" && !window.__agrinext_btn_anim) {
       transition: background 0.2s, box-shadow 0.2s, transform 0.13s, scale 0.13s;
     }
     button:hover, button:focus, input[type="button"]:hover, input[type="button"]:focus, input[type="submit"]:hover, input[type="submit"]:focus {
-      background: #92ff82 !important;
-      box-shadow: 0 8px 26px rgba(127,255,106,0.26) !important;
+      background: #66bb6a !important;
+      box-shadow: 0 8px 26px rgba(67, 160, 71, 0.16) !important;
       transform: scale(1.03) !important;
     }
     input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus {
-      box-shadow: 0 0 0 4px rgba(127,255,106,0.2) !important;
-      border-color: #7fff6a !important;
+      box-shadow: 0 0 0 4px rgba(67, 160, 71, 0.12) !important;
+      border-color: #43a047 !important;
       transition: box-shadow 0.2s, border 0.2s;
     }
   `;

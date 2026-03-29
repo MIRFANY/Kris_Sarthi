@@ -1,4 +1,5 @@
 import { useState } from "react";
+import FormattedMessage from "./FormattedMessage";
 
 const API_URL = process.env.REACT_APP_API_URL || "https://kris-sarthi-1.onrender.com";
 
@@ -33,6 +34,8 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
     setLoading(true);
     setError(null);
     setResult(null);
+    const selectedLanguage = userLanguage || "English";
+    console.log(`Fetching govt schemes in: ${selectedLanguage}`);
 
     try {
       const res = await fetch(`${API_URL}/api/schemes`, {
@@ -42,7 +45,7 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
           state,
           crop,
           farmSize,
-          language: userLanguage || "English",
+          language: selectedLanguage,
         }),
       });
 
@@ -66,7 +69,7 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
         const cleaned = line.replace(/^[#*\d.]+\s*/, "").replace(/\*\*/g, "").trim();
         return (
           <p key={i} style={{
-            color: "#7CFC00",
+            color: "#43a047",
             fontWeight: "700",
             fontSize: "15px",
             marginTop: "16px",
@@ -83,7 +86,7 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
         const cleaned = line.replace(/^[-•*]\s*/, "").replace(/\*\*/g, "").trim();
         return (
           <p key={i} style={{
-            color: "#c8e6c9",
+            color: "#1b1b1b",
             fontSize: "13.5px",
             marginLeft: "12px",
             marginBottom: "3px",
@@ -97,7 +100,7 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
       // Regular line
       return (
         <p key={i} style={{
-          color: "#b2d8b2",
+          color: "#666666",
           fontSize: "13.5px",
           marginBottom: "4px",
           lineHeight: "1.6",
@@ -110,11 +113,11 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
 
   return (
     <div style={{
-      background: "linear-gradient(145deg, #1a2e1a, #0f1f0f)",
-      border: "1px solid #2d5a2d",
+      background: "#ffffff",
+      border: "1px solid rgba(67, 160, 71, 0.15)",
       borderRadius: "16px",
       padding: "24px",
-      color: "white",
+      color: "#1b1b1b",
       fontFamily: "'Segoe UI', sans-serif",
       maxWidth: "700px",
       margin: "0 auto",
@@ -123,8 +126,8 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
       {/* Header */}
       <div style={{ marginBottom: "20px" }}>
         <span style={{
-          background: "#1b5e20",
-          color: "#69f0ae",
+          background: "rgba(67, 160, 71, 0.15)",
+          color: "#43a047",
           fontSize: "10px",
           fontWeight: "700",
           letterSpacing: "1.5px",
@@ -138,11 +141,11 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
           margin: "10px 0 4px",
           fontSize: "22px",
           fontWeight: "700",
-          color: "#fff",
+          color: "#1b1b1b",
         }}>
           🏛️ Schemes for Your Farm
         </h2>
-        <p style={{ color: "#81c784", fontSize: "13px", margin: 0 }}>
+        <p style={{ color: "#666666", fontSize: "13px", margin: 0 }}>
           Find government subsidies and schemes personalised for you
         </p>
       </div>
@@ -156,7 +159,7 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
       }}>
         {/* State */}
         <div>
-          <label style={{ color: "#81c784", fontSize: "11px", letterSpacing: "1px", display: "block", marginBottom: "6px" }}>
+          <label style={{ color: "#43a047", fontSize: "11px", letterSpacing: "1px", display: "block", marginBottom: "6px" }}>
             STATE
           </label>
           <select
@@ -164,10 +167,10 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
             onChange={(e) => setState(e.target.value)}
             style={{
               width: "100%",
-              background: "#1b2e1b",
-              border: "1px solid #2d5a2d",
+              background: "#f8faf7",
+              border: "1px solid rgba(67, 160, 71, 0.15)",
               borderRadius: "8px",
-              color: "#e8f5e9",
+              color: "#1b1b1b",
               padding: "8px 10px",
               fontSize: "13px",
               cursor: "pointer",
@@ -182,7 +185,7 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
 
         {/* Crop */}
         <div>
-          <label style={{ color: "#81c784", fontSize: "11px", letterSpacing: "1px", display: "block", marginBottom: "6px" }}>
+          <label style={{ color: "#43a047", fontSize: "11px", letterSpacing: "1px", display: "block", marginBottom: "6px" }}>
             CROP
           </label>
           <select
@@ -190,10 +193,10 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
             onChange={(e) => setCrop(e.target.value)}
             style={{
               width: "100%",
-              background: "#1b2e1b",
-              border: "1px solid #2d5a2d",
+              background: "#f8faf7",
+              border: "1px solid rgba(67, 160, 71, 0.15)",
               borderRadius: "8px",
-              color: "#e8f5e9",
+              color: "#1b1b1b",
               padding: "8px 10px",
               fontSize: "13px",
               cursor: "pointer",
@@ -208,7 +211,7 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
 
         {/* Farm Size */}
         <div>
-          <label style={{ color: "#81c784", fontSize: "11px", letterSpacing: "1px", display: "block", marginBottom: "6px" }}>
+          <label style={{ color: "#43a047", fontSize: "11px", letterSpacing: "1px", display: "block", marginBottom: "6px" }}>
             FARM SIZE
           </label>
           <select
@@ -216,10 +219,10 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
             onChange={(e) => setFarmSize(e.target.value)}
             style={{
               width: "100%",
-              background: "#1b2e1b",
-              border: "1px solid #2d5a2d",
+              background: "#f8faf7",
+              border: "1px solid rgba(67, 160, 71, 0.15)",
               borderRadius: "8px",
-              color: "#e8f5e9",
+              color: "#1b1b1b",
               padding: "8px 10px",
               fontSize: "13px",
               cursor: "pointer",
@@ -239,10 +242,10 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
         disabled={loading}
         style={{
           width: "100%",
-          background: loading ? "#2d5a2d" : "#2e7d32",
+          background: loading ? "#ccc" : "#43a047",
           border: "none",
           borderRadius: "10px",
-          color: "white",
+          color: loading ? "#666" : "white",
           padding: "12px",
           fontSize: "14px",
           fontWeight: "700",
@@ -258,14 +261,14 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
       {/* Loading State */}
       {loading && (
         <div style={{
-          background: "#0f2a0f",
+          background: "#f8faf7",
           borderRadius: "12px",
           padding: "20px",
           textAlign: "center",
-          border: "1px solid #1b5e20",
+          border: "1px solid rgba(67, 160, 71, 0.15)",
         }}>
           <div style={{ fontSize: "28px", marginBottom: "10px" }}>🌾</div>
-          <p style={{ color: "#81c784", fontSize: "13px", margin: 0 }}>
+          <p style={{ color: "#43a047", fontSize: "13px", margin: 0 }}>
             Searching government portals for {crop} schemes in {state}...
           </p>
         </div>
@@ -274,11 +277,11 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
       {/* Error State */}
       {error && (
         <div style={{
-          background: "#1a0a0a",
-          border: "1px solid #5a2020",
+          background: "#ffebee",
+          border: "1px solid #ffcdd2",
           borderRadius: "12px",
           padding: "16px",
-          color: "#ef9a9a",
+          color: "#c62828",
           fontSize: "13px",
         }}>
           ❌ {error}
@@ -290,30 +293,43 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
         <div>
           {/* Schemes Text */}
           <div style={{
-            background: "#0d1f0d",
-            border: "1px solid #2d5a2d",
+            background: "#f8faf7",
+            border: "1px solid rgba(67, 160, 71, 0.15)",
             borderRadius: "12px",
             padding: "20px",
             marginBottom: "16px",
           }}>
             <p style={{
-              color: "#69f0ae",
+              color: "#43a047",
               fontSize: "11px",
               letterSpacing: "1.5px",
               fontWeight: "700",
               marginBottom: "14px",
               marginTop: 0,
             }}>
-              📋 SCHEMES FOUND FOR {crop.toUpperCase()} FARMERS · {state.toUpperCase()}
+              📋 SCHEMES FOUND FOR {crop.toUpperCase()} FARMERS · {state.toUpperCase()} · {userLanguage || "English"}
             </p>
-            <div>{formatSchemes(result.schemes)}</div>
+            <div style={{ maxHeight: "400px", overflowY: "auto", paddingRight: "8px" }}>
+              <FormattedMessage 
+                text={result.schemes} 
+                isUserMessage={false}
+                colors={{
+                  userBg: "rgba(67, 160, 71, 0.08)",
+                  botBg: "#ffffff",
+                  text: "#1b1b1b",
+                  primary: "#43a047",
+                  accent: "#66bb6a",
+                  border: "rgba(67, 160, 71, 0.15)",
+                }}
+              />
+            </div>
           </div>
 
           {/* Source Links */}
           {result.sources && result.sources.length > 0 && (
             <div>
               <p style={{
-                color: "#81c784",
+                color: "#43a047",
                 fontSize: "11px",
                 letterSpacing: "1px",
                 marginBottom: "10px",
@@ -329,11 +345,11 @@ export default function GovtSchemes({ userState, userCrop, userLanguage }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      background: "#0f2a0f",
-                      border: "1px solid #2d5a2d",
+                      background: "#f8faf7",
+                      border: "1px solid rgba(67, 160, 71, 0.15)",
                       borderRadius: "8px",
                       padding: "10px 14px",
-                      color: "#69f0ae",
+                      color: "#43a047",
                       textDecoration: "none",
                       fontSize: "12px",
                       display: "flex",
