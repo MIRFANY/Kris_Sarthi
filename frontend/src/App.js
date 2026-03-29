@@ -17,6 +17,7 @@ import PlantImageDetection from "./PlantImageDetection";
 import DetectionHistory from "./DetectionHistory";
 import GovtSchemes from "./GovtSchemes";
 import CropInsurance from "./CropInsurance";
+import Mandiverse from "./Mandiverse";
 // --- Explore Route Dark Palette (aligned with landing page) ---
 const COLORS = {
   background: "#060a06",
@@ -1489,6 +1490,11 @@ const landingFeatures = [
     title: "Plant Detection History",
     desc: "View previous scan reports in one place, track crop health over time, and spot whether conditions are improving or getting worse.",
   },
+  {
+    tag: "Trade",
+    title: "Mandiverse",
+    desc: "Online marketplace to buy and sell crops and lend farming equipment—tractors, tools, and more—with other farmers.",
+  },
 ];
 
 const landingContent = {
@@ -1502,7 +1508,7 @@ const landingContent = {
     explore: "Explore Features",
     howItWorks: "How it works",
     suiteEyebrow: "Full Feature Suite",
-    suiteTitle: "Six tools. One powerful app.",
+    suiteTitle: "Seven tools. One powerful app.",
     guideButton: "Replay guide cards",
     buttonGuides: {
       navExplore: "Opens the full feature dashboard.",
@@ -1559,6 +1565,10 @@ const landingContent = {
         access: "How to access: Open Plant Detection History from navigation.",
         meaning: "What it means: Review past scan reports and monitor crop condition changes over time.",
       },
+      {
+        access: "How to access: Explore Features -> Mandiverse (scroll or use the Mandiverse tab).",
+        meaning: "What it means: Browse sample crop and equipment listings to buy, sell, or lend—full trading when available.",
+      },
     ],
     steps: [
       {
@@ -1589,7 +1599,7 @@ const landingContent = {
     explore: "फीचर्स देखें",
     howItWorks: "कैसे काम करता है",
     suiteEyebrow: "पूरा फीचर सूट",
-    suiteTitle: "छह टूल्स, एक दमदार ऐप।",
+    suiteTitle: "सात टूल्स, एक दमदार ऐप।",
     guideButton: "गाइड कार्ड फिर दिखाएं",
     buttonGuides: {
       navExplore: "पूरा फीचर डैशबोर्ड खोलता है।",
@@ -1654,6 +1664,11 @@ const landingContent = {
         title: "डिटेक्शन हिस्ट्री",
         desc: "पुरानी जांच रिपोर्ट देखें और फसल की हालत का ट्रैक रखें।",
       },
+      {
+        tag: "Trade",
+        title: "मंडीवर्स",
+        desc: "ऑनलाइन बाज़ार—फसल खरीदें/बेचें और ट्रैक्टर, औज़ार आदि किराए पर दें।",
+      },
     ],
   },
   pa: {
@@ -1666,7 +1681,7 @@ const landingContent = {
     explore: "ਫੀਚਰ ਵੇਖੋ",
     howItWorks: "ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ",
     suiteEyebrow: "ਪੂਰਾ ਫੀਚਰ ਸੂਟ",
-    suiteTitle: "ਛੇ ਟੂਲ, ਇੱਕ ਤਾਕਤਵਰ ਐਪ।",
+    suiteTitle: "ਸਾਤ ਟੂਲ, ਇੱਕ ਤਾਕਤਵਰ ਐਪ।",
     guideButton: "ਗਾਈਡ ਕਾਰਡ ਦੁਬਾਰਾ ਵੇਖੋ",
     buttonGuides: {
       navExplore: "ਪੂਰਾ ਫੀਚਰ ਡੈਸ਼ਬੋਰਡ ਖੋਲ੍ਹਦਾ ਹੈ।",
@@ -1731,6 +1746,11 @@ const landingContent = {
         title: "ਡਿਟੈਕਸ਼ਨ ਹਿਸਟਰੀ",
         desc: "ਪੁਰਾਣੇ ਨਤੀਜੇ ਵੇਖੋ ਅਤੇ ਫਸਲ ਦੀ ਹਾਲਤ ਟਰੈਕ ਕਰੋ।",
       },
+      {
+        tag: "Trade",
+        title: "ਮੰਡੀਵਰਸ",
+        desc: "ਔਨਲਾਈਨ ਬਾਜ਼ਾਰ—ਫਸਲ ਖਰੀਦੋ/ਵੇਚੋ ਅਤੇ ਟਰੈਕਟਰ, ਸੰਦ ਕਿਰਾਏ ਤੇ ਦਿਓ।",
+      },
     ],
   },
   ta: {
@@ -1743,7 +1763,7 @@ const landingContent = {
     explore: "அம்சங்களை பாருங்கள்",
     howItWorks: "எப்படி வேலை செய்கிறது",
     suiteEyebrow: "முழு அம்சத் தொகுப்பு",
-    suiteTitle: "ஆறு கருவிகள். ஒரு சக்திவாய்ந்த பயன்பாடு.",
+    suiteTitle: "ஏழு கருவிகள். ஒரு சக்திவாய்ந்த பயன்பாடு.",
     guideButton: "வழிகாட்டி கார்டுகளை மீண்டும் காண்க",
     buttonGuides: {
       navExplore: "முழு அம்ச டாஷ்போர்டை திறக்கும்.",
@@ -1807,6 +1827,11 @@ const landingContent = {
         tag: "History",
         title: "கண்டறிதல் வரலாறு",
         desc: "முந்தைய பகுப்பாய்வுகளை பார்த்து பயிர் நல மாற்றத்தை கண்காணிக்கவும்.",
+      },
+      {
+        tag: "Trade",
+        title: "மண்டிவெர்ஸ்",
+        desc: "ஆன்லைன் சந்தை—பயிர்கள் வாங்க/விற்கவும், டிராக்டர் மற்றும் கருவிகளை வாடகைக்கு அளிக்கவும்.",
       },
     ],
   },
@@ -1879,6 +1904,7 @@ const featureGuidesByLanguage = {
     { access: "कैसे खोलें: फीचर्स देखें -> फसल कैलेंडर -> फसल चुनें।", meaning: "यह क्या करता है: बुवाई से कटाई तक चरणवार रिमाइंडर देता है।" },
     { access: "कैसे खोलें: फीचर हब में ग्रीनजीनी चैट/वॉइस बटन का उपयोग करें।", meaning: "यह क्या करता है: आपकी भाषा में खेती से जुड़े सवालों का तुरंत जवाब देता है।" },
     { access: "कैसे खोलें: नेविगेशन से डिटेक्शन हिस्ट्री खोलें।", meaning: "यह क्या करता है: पुराने स्कैन रिपोर्ट देखकर फसल की हालत ट्रैक करने में मदद करता है।" },
+    { access: "कैसे खोलें: फीचर्स देखें -> मंडीवर्स (टैब या स्क्रॉल)।", meaning: "यह क्या करता है: फसल खरीद/बेच और उपकरण किराए के नमूने देखें—पूरा व्यापार जल्द।" },
   ],
   pa: [
     { access: "ਕਿਵੇਂ ਖੋਲ੍ਹੋ: ਫੀਚਰ ਵੇਖੋ -> ਬਿਮਾਰੀ ਤੇ ਕੀਟ ਪਛਾਣ -> ਫਸਲ ਫੋਟੋ ਅਪਲੋਡ ਕਰੋ।", meaning: "ਇਹ ਕੀ ਕਰਦਾ: AI ਫਸਲ ਦੀ ਹਾਲਤ ਵੇਖ ਕੇ ਸੰਭਾਵੀ ਸਮੱਸਿਆ ਅਤੇ ਅਗਲਾ ਕਦਮ ਦਿੰਦਾ ਹੈ।" },
@@ -1887,6 +1913,7 @@ const featureGuidesByLanguage = {
     { access: "ਕਿਵੇਂ ਖੋਲ੍ਹੋ: ਫੀਚਰ ਵੇਖੋ -> ਫਸਲ ਕੈਲੰਡਰ -> ਫਸਲ ਚੁਣੋ।", meaning: "ਇਹ ਕੀ ਕਰਦਾ: ਬੀਜਾਈ ਤੋਂ ਕਟਾਈ ਤੱਕ ਸਟੇਜ-ਵਾਇਜ਼ ਯਾਦ ਦਿਵਾਉਂਦਾ ਹੈ।" },
     { access: "ਕਿਵੇਂ ਖੋਲ੍ਹੋ: ਫੀਚਰ ਹੱਬ ਵਿੱਚ GreenGeenie ਚੈਟ/ਵੋਇਸ ਬਟਨ ਵਰਤੋ।", meaning: "ਇਹ ਕੀ ਕਰਦਾ: ਤੁਹਾਡੀ ਭਾਸ਼ਾ ਵਿੱਚ ਖੇਤੀ ਸਵਾਲਾਂ ਦੇ ਤੁਰੰਤ ਜਵਾਬ ਦਿੰਦਾ ਹੈ।" },
     { access: "ਕਿਵੇਂ ਖੋਲ੍ਹੋ: ਨੇਵੀਗੇਸ਼ਨ ਤੋਂ ਡਿਟੈਕਸ਼ਨ ਹਿਸਟਰੀ ਖੋਲ੍ਹੋ।", meaning: "ਇਹ ਕੀ ਕਰਦਾ: ਪੁਰਾਣੇ ਸਕੈਨ ਨਤੀਜੇ ਨਾਲ ਫਸਲ ਹਾਲਤ ਟਰੈਕ ਕਰ ਸਕਦੇ ਹੋ।" },
+    { access: "ਕਿਵੇਂ ਖੋਲ੍ਹੋ: ਫੀਚਰ ਵੇਖੋ -> ਮੰਡੀਵਰਸ (ਟੈਬ ਜਾਂ ਸਕ੍ਰੋਲ)।", meaning: "ਇਹ ਕੀ ਕਰਦਾ: ਫਸਲ ਖਰੀਦ/ਵੇਚ ਅਤੇ ਸੰਦ ਕਿਰਾਏ ਦੇ ਨਮੂਨੇ—ਪੂਰਾ ਵਪਾਰ ਜਲਦੀ।" },
   ],
   ta: [
     { access: "எப்படி திறப்பது: அம்சங்கள் -> நோய் மற்றும் பூச்சி கண்டறிதல் -> பயிர் படத்தை பதிவேற்றவும்.", meaning: "இது என்ன செய்கிறது: AI பயிர் நிலையை பகுப்பாய்வு செய்து அடுத்த நடவடிக்கையை சொல்கிறது." },
@@ -1895,15 +1922,23 @@ const featureGuidesByLanguage = {
     { access: "எப்படி திறப்பது: அம்சங்கள் -> பயிர் காலண்டர் -> பயிரை தேர்வு செய்யவும்.", meaning: "இது என்ன செய்கிறது: விதைப்பு முதல் அறுவடை வரை கட்டப்படியான நினைவூட்டலை வழங்குகிறது." },
     { access: "எப்படி திறப்பது: அம்ச ஹபில் GreenGeenie அரட்டை/குரல் பொத்தான்களை பயன்படுத்தவும்.", meaning: "இது என்ன செய்கிறது: உங்கள் மொழியில் விவசாய கேள்விகளுக்கு உடனடி பதில் தருகிறது." },
     { access: "எப்படி திறப்பது: வழிசெலுத்தலிலிருந்து கண்டறிதல் வரலாற்றை திறக்கவும்.", meaning: "இது என்ன செய்கிறது: பழைய ஸ்கேன் முடிவுகளை பார்த்து பயிர் நிலை மாற்றத்தை கண்காணிக்க உதவுகிறது." },
+    { access: "எப்படி திறப்பது: அம்சங்கள் -> மண்டிவெர்ஸ் (தாவல் அல்லது உருள்).", meaning: "இது என்ன செய்கிறது: பயிர் வாங்க/விற்க மற்றும் கருவி வாடகை மாதிரிகள்—முழு வணிகம் விரைவில்." },
   ],
 };
 
 const exploreContent = {
   en: {
-    tabs: { home: "Home", detection: "Plant Detection", history: "History", back: "Back to Landing" },
+    tabs: {
+      home: "Home",
+      detection: "Plant Detection",
+      history: "History",
+      mandiverse: "Mandiverse",
+      back: "Back to Landing",
+    },
     heroEyebrow: "Feature Hub",
     heroTitle: "Use all tools from one clean dashboard",
-    heroDesc: "Quick access to disease diagnosis, crop timeline, weather advisory, market signals, and voice-enabled assistant.",
+    heroDesc:
+      "Quick access to disease diagnosis, crop timeline, weather advisory, market signals, Mandiverse marketplace, and voice-enabled assistant.",
     diseaseTitle: "Disease and Pest Scan",
     diseaseDesc: "Upload crop image to detect possible disease signals and see health guidance instantly.",
     uploadPhoto: "Upload Crop Photo",
@@ -1966,12 +2001,35 @@ const exploreContent = {
     govtSchemesDesc: "Find subsidies and programmes matched to your state, crop, and farm size.",
     cropFailureTitle: "Crop Failure & Insurance",
     cropFailureDesc: "PMFBY steps, helpline, and recovery guidance tailored to your crop and state.",
+    mandiverse: {
+      tag: "Trade",
+      title: "Mandiverse",
+      subtitle:
+        "An online marketplace where farmers buy and sell crops and lend farming equipment — tractors, tillers, hoes, sprayers, and more.",
+      filterAll: "All",
+      filterCrops: "Crops",
+      filterEquipment: "Equipment",
+      filterAria: "Filter listings",
+      typeBuy: "Buy",
+      typeSell: "Sell",
+      typeLend: "Lend",
+      demoNote:
+        "Sample listings for preview. Messaging and verified trades may require sign-in when the service launches.",
+      contactCta: "Message seller (coming soon)",
+    },
   },
   hi: {
-    tabs: { home: "होम", detection: "प्लांट डिटेक्शन", history: "हिस्ट्री", back: "लैंडिंग पर वापस" },
+    tabs: {
+      home: "होम",
+      detection: "प्लांट डिटेक्शन",
+      history: "हिस्ट्री",
+      mandiverse: "मंडीवर्स",
+      back: "लैंडिंग पर वापस",
+    },
     heroEyebrow: "फीचर हब",
     heroTitle: "एक डैशबोर्ड से सभी टूल्स चलाएं",
-    heroDesc: "रोग पहचान, फसल टाइमलाइन, मौसम सलाह, मंडी संकेत और वॉइस सहायक एक ही जगह।",
+    heroDesc:
+      "रोग पहचान, फसल टाइमलाइन, मौसम सलाह, मंडी संकेत, मंडीवर्स बाज़ार और वॉइस सहायक एक ही जगह।",
     diseaseTitle: "रोग और कीट स्कैन",
     diseaseDesc: "फसल फोटो अपलोड करें और तुरंत रोग संकेत व स्वास्थ्य मार्गदर्शन पाएं।",
     uploadPhoto: "फसल फोटो अपलोड करें",
@@ -2034,12 +2092,34 @@ const exploreContent = {
     govtSchemesDesc: "राज्य, फसल और खेत के आकार के अनुसार सब्सिडी और योजनाएं खोजें।",
     cropFailureTitle: "फसल नुकसान और बीमा",
     cropFailureDesc: "PMFBY, हेल्पलाइन और फसल नुकसान के बाद क्या करें—आपकी फसल व राज्य के अनुसार।",
+    mandiverse: {
+      tag: "बाज़ार",
+      title: "मंडीवर्स",
+      subtitle:
+        "ऑनलाइन बाज़ार जहाँ किसान फसल खरीद और बेच सकते हैं और ट्रैक्टर, टिलर, कुदाल, स्प्रेयर आदि उपकरण किराए पर दे सकते हैं।",
+      filterAll: "सभी",
+      filterCrops: "फसल",
+      filterEquipment: "उपकरण",
+      filterAria: "लिस्ट फ़िल्टर",
+      typeBuy: "खरीद",
+      typeSell: "बिक्री",
+      typeLend: "किराया",
+      demoNote: "ये नमूना लिस्ट हैं। संदेश और सत्यापित लेनदेन सेवा शुरू होने पर साइन-इन से जुड़ सकते हैं।",
+      contactCta: "विक्रेता से संपर्क (जल्द)",
+    },
   },
   pa: {
-    tabs: { home: "ਹੋਮ", detection: "ਪਲਾਂਟ ਡਿਟੈਕਸ਼ਨ", history: "ਹਿਸਟਰੀ", back: "ਲੈਂਡਿੰਗ ਤੇ ਵਾਪਸ" },
+    tabs: {
+      home: "ਹੋਮ",
+      detection: "ਪਲਾਂਟ ਡਿਟੈਕਸ਼ਨ",
+      history: "ਹਿਸਟਰੀ",
+      mandiverse: "ਮੰਡੀਵਰਸ",
+      back: "ਲੈਂਡਿੰਗ ਤੇ ਵਾਪਸ",
+    },
     heroEyebrow: "ਫੀਚਰ ਹੱਬ",
     heroTitle: "ਇੱਕ ਡੈਸ਼ਬੋਰਡ ਤੋਂ ਸਾਰੇ ਟੂਲ ਵਰਤੋ",
-    heroDesc: "ਬਿਮਾਰੀ ਪਛਾਣ, ਫਸਲ ਟਾਈਮਲਾਈਨ, ਮੌਸਮ ਸਲਾਹ, ਮੰਡੀ ਸੰਕੇਤ ਅਤੇ ਵੋਇਸ ਸਹਾਇਕ ਇਕੱਠੇ।",
+    heroDesc:
+      "ਬਿਮਾਰੀ ਪਛਾਣ, ਫਸਲ ਟਾਈਮਲਾਈਨ, ਮੌਸਮ ਸਲਾਹ, ਮੰਡੀ ਸੰਕੇਤ, ਮੰਡੀਵਰਸ ਬਾਜ਼ਾਰ ਅਤੇ ਵੋਇਸ ਸਹਾਇਕ ਇਕੱਠੇ।",
     diseaseTitle: "ਬਿਮਾਰੀ ਅਤੇ ਕੀਟ ਸਕੈਨ",
     diseaseDesc: "ਫਸਲ ਫੋਟੋ ਅਪਲੋਡ ਕਰੋ ਅਤੇ ਤੁਰੰਤ ਸਿਹਤ ਸਲਾਹ ਲਵੋ।",
     uploadPhoto: "ਫਸਲ ਫੋਟੋ ਅਪਲੋਡ ਕਰੋ",
@@ -2102,12 +2182,34 @@ const exploreContent = {
     govtSchemesDesc: "ਰਾਜ, ਫਸਲ ਅਤੇ ਖੇਤ ਦੇ ਆਕਾਰ ਅਨੁਸਾਰ ਸਬਸਿਡੀ ਅਤੇ ਯੋਜਨਾਵਾਂ ਲੱਭੋ।",
     cropFailureTitle: "ਫਸਲ ਨੁਕਸਾਨ ਅਤੇ ਬੀਮਾ",
     cropFailureDesc: "PMFBY, ਹੈਲਪਲਾਈਨ ਅਤੇ ਫਸਲ ਨੁਕਸਾਨ ਤੋਂ ਬਾਅਦ ਕਦਮ—ਤੁਹਾਡੀ ਫਸਲ ਅਤੇ ਰਾਜ ਅਨੁਸਾਰ।",
+    mandiverse: {
+      tag: "ਬਾਜ਼ਾਰ",
+      title: "ਮੰਡੀਵਰਸ",
+      subtitle:
+        "ਔਨਲਾਈਨ ਬਾਜ਼ਾਰ ਜਿੱਥੇ ਕਿਸਾਨ ਫਸਲ ਖਰੀਦਦੇ ਤੇ ਵੇਚਦੇ ਹਨ ਅਤੇ ਟਰੈਕਟਰ, ਟਿਲਰ, ਕੁੱਲ, ਸਪਰੇਅਰ ਆਦਿ ਕਿਰਾਏ ਤੇ ਦਿੰਦੇ ਹਨ।",
+      filterAll: "ਸਭ",
+      filterCrops: "ਫਸਲ",
+      filterEquipment: "ਸੰਦ",
+      filterAria: "ਲਿਸਟ ਫਿਲਟਰ",
+      typeBuy: "ਖਰੀਦ",
+      typeSell: "ਵਿਕਰੀ",
+      typeLend: "ਕਿਰਾਇਆ",
+      demoNote: "ਇਹ ਨਮੂਨਾ ਲਿਸਟਾਂ ਹਨ। ਸੇਵਾ ਸ਼ੁਰੂ ਹੋਣ ਤੇ ਸਾਈਨ-ਇਨ ਨਾਲ ਸੁਨੇਹਾ ਅਤੇ ਵਪਾਰ।",
+      contactCta: "ਵਿਕਰੇਤਾ ਨਾਲ ਸੰਪਰਕ (ਜਲਦੀ)",
+    },
   },
   ta: {
-    tabs: { home: "முகப்பு", detection: "பிளாண்ட் கண்டறிதல்", history: "வரலாறு", back: "லேண்டிங்கிற்கு திரும்பு" },
+    tabs: {
+      home: "முகப்பு",
+      detection: "பிளாண்ட் கண்டறிதல்",
+      history: "வரலாறு",
+      mandiverse: "மண்டிவெர்ஸ்",
+      back: "லேண்டிங்கிற்கு திரும்பு",
+    },
     heroEyebrow: "அம்ச ஹப்",
     heroTitle: "ஒரே டாஷ்போர்டில் எல்லா கருவிகளும்",
-    heroDesc: "நோய் கண்டறிதல், பயிர் காலவரிசை, வானிலை ஆலோசனை, சந்தை தகவல், குரல் உதவி அனைத்தும் ஒரே இடத்தில்.",
+    heroDesc:
+      "நோய் கண்டறிதல், பயிர் காலவரிசை, வானிலை ஆலோசனை, சந்தை தகவல், மண்டிவெர்ஸ் சந்தை, குரல் உதவி அனைத்தும் ஒரே இடத்தில்.",
     diseaseTitle: "நோய் மற்றும் பூச்சி ஸ்கேன்",
     diseaseDesc: "பயிர் படத்தை பதிவேற்றி உடனடி ஆரோக்கிய வழிகாட்டலை பெறுங்கள்.",
     uploadPhoto: "பயிர் படத்தை பதிவேற்றவும்",
@@ -2170,6 +2272,21 @@ const exploreContent = {
     govtSchemesDesc: "மாநிலம், பயிர் மற்றும் விவசாய அளவுக்கு ஏற்ப மானியங்கள் மற்றும் திட்டங்களைத் தேடுங்கள்.",
     cropFailureTitle: "பயிர் இழப்பு மற்றும் காப்பீடு",
     cropFailureDesc: "PMFBY, உதவி எண் மற்றும் இழப்புக்குப் பிந்தைய நடவடிக்கைகள்—உங்கள் பயிர் மற்றும் மாநிலத்திற்கு ஏற்ப.",
+    mandiverse: {
+      tag: "வர்த்தகம்",
+      title: "மண்டிவெர்ஸ்",
+      subtitle:
+        "ஆன்லைன் சந்தை—விவசாயிகள் பயிர்கள் வாங்கி விற்கவும், டிராக்டர், டில்லர், கருவிகள், தெளிப்பான்கள் போன்றவற்றை வாடகைக்கு வழங்கவும்.",
+      filterAll: "அனைத்தும்",
+      filterCrops: "பயிர்கள்",
+      filterEquipment: "உபகரணம்",
+      filterAria: "பட்டியல் வடிகட்டி",
+      typeBuy: "வாங்க",
+      typeSell: "விற்க",
+      typeLend: "வாடகை",
+      demoNote: "மாதிரிப் பட்டியல்கள். சேவை தொடங்கும்போது உறுதிப்படுத்தப்பட்ட வர்த்தனைக்கு உள்நுழைவு தேவையாகலாம்.",
+      contactCta: "விற்பனையாளரை தொடர்பு (விரைவில்)",
+    },
   },
 };
 
@@ -2718,12 +2835,14 @@ if (!showFeatureHub) {
                 <span className="ks-feature-tag">{feature.tag}</span>
                 <h3>{feature.title}</h3>
                 <p>{feature.desc}</p>
-                {showFeatureGuide && index === activeFeatureGuideIndex && (
-                  <div className="ks-guide-chip" role="note" aria-live="polite">
-                    <p>{activeFeatureGuides?.[index]?.access}</p>
-                    <p>{activeFeatureGuides?.[index]?.meaning}</p>
-                  </div>
-                )}
+                <div className="ks-feature-guide-slot" aria-hidden={!showFeatureGuide || index !== activeFeatureGuideIndex}>
+                  {showFeatureGuide && index === activeFeatureGuideIndex && (
+                    <div className="ks-guide-chip" role="note" aria-live="polite">
+                      <p>{activeFeatureGuides?.[index]?.access}</p>
+                      <p>{activeFeatureGuides?.[index]?.meaning}</p>
+                    </div>
+                  )}
+                </div>
               </article>
             ))}
           </div>
@@ -2764,6 +2883,12 @@ if (showFeatureHub) {
           <button className={`ks-explore-tab ${currentView === "home" ? "ks-explore-tab-active" : ""}`} onClick={() => jumpToFeature("feature-top", "home")}>{activeExplore.tabs.home}</button>
           <button className={`ks-explore-tab ${currentView === "detection" ? "ks-explore-tab-active" : ""}`} onClick={() => jumpToFeature("feature-detection", "detection")}>{activeExplore.tabs.detection}</button>
           <button className={`ks-explore-tab ${currentView === "history" ? "ks-explore-tab-active" : ""}`} onClick={() => jumpToFeature("feature-history", "history")}>{activeExplore.tabs.history}</button>
+          <button
+            className={`ks-explore-tab ${currentView === "mandiverse" ? "ks-explore-tab-active" : ""}`}
+            onClick={() => jumpToFeature("feature-mandiverse", "mandiverse")}
+          >
+            {activeExplore.tabs.mandiverse}
+          </button>
           <div className="ks-language-wrap">
             <span className="ks-language-icon" aria-hidden="true">A</span>
             <select
@@ -3253,6 +3378,10 @@ if (showFeatureHub) {
             )}
             {renderMandiTrendSection("explore")}
           </article>
+        </section>
+
+        <section className="ks-explore-row ks-explore-row-single">
+          <Mandiverse copy={activeExplore.mandiverse} />
         </section>
 
         <section className="ks-explore-row ks-explore-row-single">

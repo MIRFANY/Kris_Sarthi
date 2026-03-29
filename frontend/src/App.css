@@ -168,6 +168,145 @@
   align-self: stretch;
 }
 
+/* Mandiverse marketplace section */
+.ks-mandiverse-lead {
+  margin: 10px 0 0;
+  max-width: 52rem;
+}
+
+.ks-mandiverse-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.ks-mandiverse-filter {
+  border: 1px solid rgba(127, 255, 106, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(240, 244, 238, 0.9);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: "Syne", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.ks-mandiverse-filter:hover {
+  border-color: rgba(127, 255, 106, 0.42);
+  background: rgba(127, 255, 106, 0.08);
+}
+
+.ks-mandiverse-filter-active {
+  background: rgba(127, 255, 106, 0.16);
+  border-color: rgba(127, 255, 106, 0.45);
+  color: #e9ffe4;
+}
+
+.ks-mandiverse-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ks-mandiverse-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 10px 14px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(127, 255, 106, 0.18);
+  background: #101910;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.ks-mandiverse-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ks-mandiverse-row-main strong {
+  font-family: "Syne", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f0f4ee;
+}
+
+.ks-mandiverse-detail {
+  font-size: 12px;
+  color: rgba(240, 244, 238, 0.62);
+}
+
+.ks-mandiverse-loc {
+  font-size: 11px;
+  color: rgba(200, 255, 190, 0.75);
+  white-space: nowrap;
+}
+
+.ks-mandiverse-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: #c8ffc0;
+  white-space: nowrap;
+}
+
+.ks-mandiverse-pill {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-family: "Syne", sans-serif;
+  align-self: center;
+}
+
+.ks-mandiverse-pill-buy {
+  background: rgba(100, 180, 255, 0.18);
+  border: 1px solid rgba(100, 180, 255, 0.4);
+  color: #c8e8ff;
+}
+
+.ks-mandiverse-pill-sell {
+  background: rgba(127, 255, 106, 0.14);
+  border: 1px solid rgba(127, 255, 106, 0.38);
+  color: #d4ffd0;
+}
+
+.ks-mandiverse-pill-lend {
+  background: rgba(255, 200, 120, 0.12);
+  border: 1px solid rgba(255, 200, 120, 0.35);
+  color: #ffe8c8;
+}
+
+.ks-mandiverse-demo {
+  margin-top: 14px !important;
+}
+
+@media (max-width: 720px) {
+  .ks-mandiverse-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ks-mandiverse-pill {
+    justify-self: flex-start;
+  }
+
+  .ks-mandiverse-loc,
+  .ks-mandiverse-price {
+    white-space: normal;
+  }
+}
+
 .ks-explore-detail {
   margin-top: 12px;
   width: 100%;
@@ -504,7 +643,7 @@
 
 .ks-nav {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -546,6 +685,7 @@
   align-items: flex-start;
   gap: 8px;
   position: relative;
+  overflow: visible;
 }
 
 .ks-language-wrap {
@@ -761,8 +901,10 @@
 }
 
 .ks-btn-guide {
-  position: relative;
-  z-index: 6;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 30;
   display: inline-flex !important;
   flex-direction: column;
   align-items: flex-start;
@@ -772,16 +914,16 @@
   max-width: 290px;
   min-width: 200px;
   padding: 8px 11px;
-  margin-top: 4px;
+  margin-top: 8px;
   border-radius: 10px;
-  border: 1px solid rgba(127, 255, 106, 0.45);
-  background: rgba(127, 255, 106, 0.16);
+  border: 1px solid rgba(127, 255, 106, 0.5);
+  background: #101910;
   color: #ecffe8;
   font-family: "Inter", sans-serif;
   font-size: 11px;
   font-weight: 500;
   line-height: 1.45;
-  box-shadow: 0 10px 24px rgba(3, 14, 5, 0.52);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(127, 255, 106, 0.12);
   animation: ksBtnPop 0.36s ease;
   pointer-events: none;
 }
@@ -794,9 +936,9 @@
   width: 10px;
   height: 10px;
   transform: rotate(45deg);
-  background: rgba(127, 255, 106, 0.16);
-  border-left: 1px solid rgba(127, 255, 106, 0.45);
-  border-top: 1px solid rgba(127, 255, 106, 0.45);
+  background: #101910;
+  border-left: 1px solid rgba(127, 255, 106, 0.5);
+  border-top: 1px solid rgba(127, 255, 106, 0.5);
 }
 
 .ks-btn-guide-title {
@@ -1022,10 +1164,11 @@
 .ks-step-guide {
   position: relative;
   margin-top: 12px;
-  border: 1px solid rgba(127, 255, 106, 0.34);
-  background: rgba(127, 255, 106, 0.1);
+  border: 1px solid rgba(127, 255, 106, 0.45);
+  background: #101910;
   border-radius: 10px;
   padding: 8px 10px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(127, 255, 106, 0.08);
   animation: ksGuideIn 0.32s ease;
 }
 
@@ -1037,9 +1180,9 @@
   width: 10px;
   height: 10px;
   transform: rotate(45deg);
-  background: rgba(127, 255, 106, 0.1);
-  border-left: 1px solid rgba(127, 255, 106, 0.34);
-  border-top: 1px solid rgba(127, 255, 106, 0.34);
+  background: #101910;
+  border-left: 1px solid rgba(127, 255, 106, 0.45);
+  border-top: 1px solid rgba(127, 255, 106, 0.45);
 }
 
 .ks-step-guide span {
@@ -1092,8 +1235,9 @@
   margin-top: 14px;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(127, 255, 106, 0.35);
-  background: linear-gradient(135deg, rgba(127, 255, 106, 0.12), rgba(127, 255, 106, 0.05));
+  border: 1px solid rgba(127, 255, 106, 0.45);
+  background: #101910;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(127, 255, 106, 0.1);
   animation: ksGuideIn 0.35s ease;
 }
 
@@ -1105,9 +1249,9 @@
   width: 12px;
   height: 12px;
   transform: rotate(45deg);
-  background: rgba(127, 255, 106, 0.11);
-  border-left: 1px solid rgba(127, 255, 106, 0.28);
-  border-top: 1px solid rgba(127, 255, 106, 0.28);
+  background: #101910;
+  border-left: 1px solid rgba(127, 255, 106, 0.45);
+  border-top: 1px solid rgba(127, 255, 106, 0.45);
 }
 
 .ks-guide-chip p {
@@ -1162,13 +1306,24 @@
   font-family: "Inter", sans-serif;
 }
 
+/* Reserves space so rotating guide chips do not resize the grid */
+.ks-feature-guide-slot {
+  min-height: 8.5rem;
+  margin-top: 14px;
+}
+
+.ks-feature-guide-slot .ks-guide-chip {
+  margin-top: 0;
+}
+
 .ks-feature-pop {
   position: relative;
   margin-top: 12px;
-  border: 1px solid rgba(127, 255, 106, 0.28);
-  background: rgba(127, 255, 106, 0.08);
+  border: 1px solid rgba(127, 255, 106, 0.42);
+  background: #101910;
   border-radius: 12px;
   padding: 10px 11px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(127, 255, 106, 0.08);
 }
 
 .ks-feature-pop::before {
@@ -1179,9 +1334,9 @@
   width: 12px;
   height: 12px;
   transform: rotate(45deg);
-  background: rgba(127, 255, 106, 0.08);
-  border-left: 1px solid rgba(127, 255, 106, 0.28);
-  border-top: 1px solid rgba(127, 255, 106, 0.28);
+  background: #101910;
+  border-left: 1px solid rgba(127, 255, 106, 0.42);
+  border-top: 1px solid rgba(127, 255, 106, 0.42);
 }
 
 .ks-feature-pop span {
