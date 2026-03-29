@@ -17,6 +17,7 @@ import PlantImageDetection from "./PlantImageDetection";
 import DetectionHistory from "./DetectionHistory";
 import GovtSchemes from "./GovtSchemes";
 import CropInsurance from "./CropInsurance";
+import FormattedMessage from "./FormattedMessage";
 // --- Explore Route Dark Palette (aligned with landing page) ---
 const COLORS = {
   background: "#060a06",
@@ -3442,21 +3443,18 @@ if (showFeatureHub) {
               )}
               {chatHistory.map((msg, idx) => (
                 <div key={idx} style={{ margin: "10px 0", textAlign: msg.from === "user" ? "right" : "left" }}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      background: msg.from === "user" ? "rgba(127,255,106,0.16)" : "rgba(255,255,255,0.06)",
-                      color: COLORS.text,
-                      border: `1px solid ${COLORS.border}`,
-                      borderRadius: 12,
-                      padding: "8px 14px",
-                      maxWidth: "75%",
-                      fontSize: 15,
-                      wordBreak: "break-word",
+                  <FormattedMessage 
+                    text={msg.text} 
+                    isUserMessage={msg.from === "user"}
+                    colors={{
+                      userBg: "rgba(127,255,106,0.16)",
+                      botBg: "rgba(255,255,255,0.06)",
+                      text: COLORS.text,
+                      primary: COLORS.primary,
+                      accent: COLORS.accent,
+                      border: COLORS.border,
                     }}
-                  >
-                    {msg.text}
-                  </span>
+                  />
                 </div>
               ))}
               {chatLoading && <div style={{ color: COLORS.text, opacity: 0.7 }}>{t.thinking}</div>}
@@ -5777,27 +5775,18 @@ if (showFeatureHub) {
                     gap: 6,
                     flexDirection: msg.from === "user" ? "row-reverse" : "row",
                   }}>
-                    <span
-                      style={{
-                        display: "inline-block",
-                        background:
-                          msg.from === "user" ? COLORS.primary : COLORS.accent,
-                        color:
-                          msg.from === "user" ? COLORS.buttonText : COLORS.text,
-                        borderRadius: 12,
-                        padding: "8px 14px",
-                        maxWidth: "75%",
-                        fontSize: 15,
-                        wordBreak: "break-word",
-                        boxShadow:
-                          msg.from === "user"
-                            ? "0 2px 8px #43a04722"
-                            : "0 2px 8px #b7e4c722",
-                        animation: "cardEntrance 0.7s cubic-bezier(.5,1.5,.5,1)",
+                    <FormattedMessage 
+                      text={msg.text} 
+                      isUserMessage={msg.from === "user"}
+                      colors={{
+                        userBg: "rgba(127,255,106,0.16)",
+                        botBg: "rgba(255,255,255,0.06)",
+                        text: COLORS.text,
+                        primary: COLORS.primary,
+                        accent: COLORS.accent,
+                        border: COLORS.border,
                       }}
-                    >
-                      {msg.text}
-                    </span>
+                    />
                     {/* Speaker button for all messages */}
                     <button
                       type="button"

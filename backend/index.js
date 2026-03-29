@@ -195,10 +195,17 @@ app.post("/generate-text", async (req, res) => {
       return res.status(400).json({ reply: "Prompt is required" });
     }
 
-    // Create a system prompt that instructs the AI to respond in the specified language
-    const fullPrompt = `You are GreenGeenie, a helpful agricultural assistant for Indian farmers. You help with farming advice, crop information, weather guidance, and market prices. 
+    // Create a system prompt that instructs the AI to respond in the specified language with markdown formatting
+    const fullPrompt = `You are GreenGeenie, a helpful agricultural assistant for Indian farmers. You help with farming advice, crop information, weather guidance, and market prices.
 
-IMPORTANT: You MUST respond in ${language} language only. Do not use any other language in your response.
+IMPORTANT FORMATTING INSTRUCTIONS:
+1. Format your response using markdown for better readability
+2. Use **bold** for important terms, crops, and numbers
+3. Use bullet points (- or *) for lists and options
+4. Use numbered lists (1. 2. 3.) for steps and procedures
+5. Use headers (## or ###) to organize main sections
+6. Use > for important quotes or warnings
+7. Always respond in ${language} language ONLY. No other languages.
 
 User's question: ${userMsg}`;
 
@@ -601,14 +608,20 @@ ${schemesText}
 
 List the top 3-4 most relevant schemes for a ${farmSize} farmer growing ${crop} in ${state}.
 
+Format your response with **markdown** for clarity:
+- Use ## for each scheme name
+- Use **bold** for important terms and deadlines
+- Use bullet points for benefits, eligibility, and application steps
+- Use numbered lists for step-by-step procedures
+
 For each scheme provide:
-- Scheme name
-- What benefit they get (in very simple language)
-- Who is eligible
-- How to apply (steps)
+- Scheme name (as header)
+- What benefit they get (bullet points, simple language)
+- Who is eligible (bullet points)
+- How to apply (numbered steps)
 - Website or helpline number
 
-IMPORTANT: Respond in ${language} language only. Keep it very simple and easy for a farmer to understand.`;
+IMPORTANT: Respond in ${language} language ONLY. Keep it very simple and easy for a farmer to understand.`;
 
     const result = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -648,19 +661,26 @@ app.post("/api/crop-insurance", async (req, res) => {
 
 A ${crop} farmer in ${state} needs help. Provide:
 
-1. Immediate Steps (what to do in first 72 hours after crop failure)
-2. PM Fasal Bima Yojana (crop insurance scheme):
+1. **Immediate Steps** (what to do in first 72 hours after crop failure)
+2. **PM Fasal Bima Yojana** (crop insurance scheme):
    - Am I eligible?
-   - How to register (step by step)
-   - Documents needed
+   - How to register (step by step with numbered lists)
+   - Documents needed (bullet points)
    - How to file a claim
    - Time limit to file claim
    - Expected compensation
-3. State-specific schemes for ${state} farmers
-4. Helpline numbers (PM Fasal Bima, state agriculture dept)
-5. Next crop advice (what to plant next season after ${crop} failure)
+3. **State-specific schemes** for ${state} farmers
+4. **Helpline numbers** (PM Fasal Bima, state agriculture dept)
+5. **Next crop advice** (what to plant next season after ${crop} failure)
 
-IMPORTANT: Respond in ${language} language only. Keep it very simple for a farmer to understand. Use numbered steps.`;
+Format your response with **markdown**:
+- Use ## for main section headers
+- Use **bold** for important terms, deadlines, and schemes
+- Use bullet points (-) for lists and options
+- Use numbered lists (1. 2. 3.) for step-by-step procedures
+- Use > for important warnings or critical actions
+
+IMPORTANT: Respond in ${language} language ONLY. Keep it very simple for a farmer to understand.`;
 
     const result = await ai.models.generateContent({
       model: "gemini-2.5-flash",
